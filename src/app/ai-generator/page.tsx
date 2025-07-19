@@ -17,7 +17,7 @@ const EnhancedAICaptionGenerator = () => {
   const [isCleaningCaptions, setIsCleaningCaptions] = useState(false);
   const [selectedModel, setSelectedModel] = useState('anthropic/claude-3.5-sonnet');
 
-  // ✅ NEW: Smart Features State
+  // Smart Features State
   const [usePromptRotation, setUsePromptRotation] = useState(true);
   const [selectedFormulas, setSelectedFormulas] = useState([]);
   const [similarityThreshold, setSimilarityThreshold] = useState(70);
@@ -26,7 +26,7 @@ const EnhancedAICaptionGenerator = () => {
   const [contentHistory, setContentHistory] = useState([]);
   const [duplicateWarnings, setDuplicateWarnings] = useState([]);
 
-  // ✅ NEW: Dynamic pages from dashboard
+  // Dynamic pages from dashboard
   const [pageProfiles, setPageProfiles] = useState({});
 
   // Load data from localStorage on mount
@@ -40,19 +40,19 @@ const EnhancedAICaptionGenerator = () => {
     const savedHistory = localStorage.getItem('content_history');
     if (savedHistory) setContentHistory(JSON.parse(savedHistory));
 
-    // ✅ LOAD PAGES FROM DASHBOARD
+    // Load pages from dashboard
     loadPagesFromDashboard();
 
-    // ✅ PARSE URL PARAMETERS FROM CATEGORY GENERATOR
+    // Parse URL parameters from category generator
     parseUrlParameters();
   }, []);
 
-  // ✅ LOAD DASHBOARD PAGES
+  // Load dashboard pages
   const loadPagesFromDashboard = () => {
     const defaultPages = {
       'momix-famille': {
         name: 'Momix en Famille',
-        language: 'French',
+        language: 'french',
         niche: 'Family & Parenting',
         audience: 'French adults 35-55, family-oriented',
         demographics: '84.5% France, 68% ages 35-54, balanced gender',
@@ -61,16 +61,27 @@ const EnhancedAICaptionGenerator = () => {
         topPerformers: 'Text-on-image posts (95%), emotional stories, family wisdom',
         engagementData: '289% increase with multi-line emotional content'
       },
-      'english-motivation': {
-        name: 'English Motivation',
-        language: 'English',
+      'rise-grind': {
+        name: 'Rise & Grind',
+        language: 'english',
         niche: 'Motivation & Success',
-        audience: 'English speakers 25-45, ambitious',
+        audience: 'English speakers 25-45, ambitious professionals',
         demographics: 'Global English, career-focused',
         tone: 'Inspiring, direct, powerful',
         peakTimes: 'Monday mornings, Wednesday evenings',
         topPerformers: 'Success stories, quotes, transformation posts',
-        engagementData: 'High engagement with personal stories and calls-to-action'
+        engagementData: 'High engagement with personal stories and transformation content'
+      },
+      'easy-family-recipes': {
+        name: 'Easy Family Recipes',
+        language: 'english',
+        niche: 'Family & Cooking',
+        audience: 'English-speaking parents, home cooks',
+        demographics: 'Family-oriented, cooking enthusiasts',
+        tone: 'Friendly, helpful, practical',
+        peakTimes: 'Evening meal planning times',
+        topPerformers: 'Recipe tips, family meal ideas',
+        engagementData: 'High engagement with practical cooking tips'
       }
     };
 
@@ -85,10 +96,10 @@ const EnhancedAICaptionGenerator = () => {
         dashboardPages.forEach(page => {
           convertedPages[page.id] = {
             name: page.name,
-            language: page.settings?.language || 'French',
+            language: page.settings?.language || 'french',
             niche: page.niche || 'General',
             audience: page.audience || 'General audience',
-            demographics: `Language: ${page.settings?.language || 'French'}`,
+            demographics: `Language: ${page.settings?.language || 'french'}`,
             tone: page.tone || 'Authentic',
             peakTimes: page.settings?.postingTimes?.join(', ') || 'Various times',
             topPerformers: 'Dynamic content based on page performance',
@@ -107,7 +118,7 @@ const EnhancedAICaptionGenerator = () => {
     }
   };
 
-  // ✅ PARSE URL PARAMETERS FROM CATEGORY
+  // Parse URL parameters from category
   const parseUrlParameters = () => {
     const urlParams = new URLSearchParams(window.location.search);
     const categoryParam = urlParams.get('category');
@@ -123,7 +134,6 @@ const EnhancedAICaptionGenerator = () => {
         
         // Set formulas if available
         if (categoryData.formulas && Array.isArray(categoryData.formulas)) {
-          // Convert formula names to the format used in AI generator
           const convertedFormulas = categoryData.formulas.map(formula => {
             switch (formula) {
               case 'AGE_PROGRESSION': return 'age_progression';
@@ -164,12 +174,13 @@ const EnhancedAICaptionGenerator = () => {
     }
   };
 
-  // ✅ FEATURE 1: VIRAL FORMULAS FOR PROMPT ROTATION
+  // Viral formulas with language support
   const viralFormulas = {
     'age_progression': {
-      name: 'Progression d\'âge',
-      structure: 'À 20 ans / À 30 ans / À 40 ans / À 50 ans',
-      prompt: `FORMULE PROGRESSION D'ÂGE:
+      name: 'Age Progression',
+      french: {
+        structure: 'À 20 ans / À 30 ans / À 40 ans / À 50 ans',
+        prompt: `FORMULE PROGRESSION D'ÂGE:
 À 20 ans: [croyance jeune naïve]
 
 À 30 ans: [première réalisation]
@@ -179,11 +190,26 @@ const EnhancedAICaptionGenerator = () => {
 À 50 ans: [sagesse finale acceptée]
 
 Utilise cette structure exacte avec des transitions d'âge réalistes et des vérités qui évoluent.`
+      },
+      english: {
+        structure: 'At 20 / At 30 / At 40 / At 50',
+        prompt: `AGE PROGRESSION FORMULA:
+At 20: [naive young belief]
+
+At 30: [first major realization]
+
+At 40: [harder mature truth]
+
+At 50: [final accepted wisdom]
+
+Use this exact structure with realistic age transitions and evolving truths.`
+      }
     },
     'before_after': {
-      name: 'Avant/Maintenant',
-      structure: 'Avant d\'être parent / Maintenant',
-      prompt: `FORMULE AVANT/MAINTENANT:
+      name: 'Before/After',
+      french: {
+        structure: 'Avant d\'être parent / Maintenant',
+        prompt: `FORMULE AVANT/MAINTENANT:
 Avant d'être parent: [naïveté/idéalisme]
 
 Maintenant: [réalité crue mais touchante]
@@ -191,11 +217,24 @@ Maintenant: [réalité crue mais touchante]
 [Conclusion humble et touchante]
 
 Crée un contraste émotionnel fort entre l'idéal et la réalité parentale.`
+      },
+      english: {
+        structure: 'Before I became a parent / Now',
+        prompt: `BEFORE/AFTER FORMULA:
+Before I became a parent: [naivety/idealism]
+
+Now: [raw but touching reality]
+
+[Humble and touching conclusion]
+
+Create a strong emotional contrast between the ideal and parenting reality.`
+      }
     },
     'confession': {
-      name: 'Confession personnelle',
-      structure: 'J\'avoue que / La vérité c\'est que',
-      prompt: `FORMULE CONFESSION:
+      name: 'Personal Confession',
+      french: {
+        structure: 'J\'avoue que / La vérité c\'est que',
+        prompt: `FORMULE CONFESSION:
 J'avoue que [vulnérabilité personnelle]
 
 La vérité c'est que [réalité cachée]
@@ -205,11 +244,26 @@ La vérité c'est que [réalité cachée]
 [Validation que c'est normal]
 
 Utilise la vulnérabilité pour créer une connexion émotionnelle forte.`
+      },
+      english: {
+        structure: 'I admit that / The truth is',
+        prompt: `CONFESSION FORMULA:
+I admit that [personal vulnerability]
+
+The truth is [hidden reality]
+
+[Explanation why it's hard to admit]
+
+[Validation that it's normal]
+
+Use vulnerability to create a strong emotional connection.`
+      }
     },
     'revelation': {
-      name: 'Révélation d\'âge',
-      structure: 'À [âge] ans, j\'ai enfin compris',
-      prompt: `FORMULE RÉVÉLATION:
+      name: 'Age Revelation',
+      french: {
+        structure: 'À [âge] ans, j\'ai enfin compris',
+        prompt: `FORMULE RÉVÉLATION:
 À [âge spécifique] ans, j'ai enfin compris
 
 [Vérité sur la vie/famille/relations]
@@ -219,34 +273,20 @@ Utilise la vulnérabilité pour créer une connexion émotionnelle forte.`
 [Impact de cette compréhension]
 
 L'âge doit être crédible et la révélation universelle mais spécifique.`
-    },
-    'nostalgia_tech': {
-      name: 'Nostalgie technologique',
-      structure: 'Se souvenir quand',
-      prompt: `FORMULE NOSTALGIE TECH:
-Se souvenir quand:
+      },
+      english: {
+        structure: 'At [age], I finally understood',
+        prompt: `REVELATION FORMULA:
+At [specific age], I finally understood
 
-[Contrainte technologique d'avant]
-[Autre contrainte de l'époque]
-[Troisième exemple nostalgique]
+[Truth about life/family/relationships]
 
-[Réflexion sur le changement/évolution]
+[Why it took so long to understand]
 
-Utilise des références spécifiquement françaises des années 90-2000.`
-    },
-    'perspective_multiple': {
-      name: 'Perspectives multiples',
-      structure: 'Les enfants / Moi le matin / Moi le soir',
-      prompt: `FORMULE PERSPECTIVES MULTIPLES:
-Les enfants: [demande/attente]
+[Impact of this understanding]
 
-Moi le matin: [bonne volonté/énergie]
-
-Moi le soir: [réalité fatiguée mais drôle]
-
-[Conclusion sur la réalité parentale]
-
-Montre l'évolution de l'énergie parentale sur une journée.`
+The age must be credible and the revelation universal but specific.`
+      }
     }
   };
 
@@ -308,13 +348,13 @@ Montre l'évolution de l'énergie parentale sur une journée.`
       name: '💭 Nostalgia & Memory',
       description: 'Childhood memories, time passage, "remember when"',
       backgrounds: ['Purple-Pink', 'Cyan-Purple', 'Pink-Blue'],
-      recommendedFormulas: ['nostalgia_tech', 'age_progression', 'perspective_multiple']
+      recommendedFormulas: ['age_progression', 'before_after', 'revelation']
     },
     'humor-social': {
       name: '😂 Humor & Social Commentary',
       description: 'Technology struggles, modern parenting, generational gaps',
       backgrounds: ['Pink-Red', 'Pink-Blue', 'Yellow-Pink'],
-      recommendedFormulas: ['perspective_multiple', 'before_after', 'nostalgia_tech']
+      recommendedFormulas: ['before_after', 'confession', 'age_progression']
     },
     'mixed-viral': {
       name: '🔥 Mixed Viral Content',
@@ -324,70 +364,7 @@ Montre l'évolution de l'énergie parentale sur une journée.`
     }
   };
 
-  // ✅ FEATURE 2: SIMILARITY DETECTION
-  const calculateSimilarity = (text1, text2) => {
-    const normalize = (str) => str.toLowerCase().replace(/[^\w\s]/g, '').trim();
-    const words1 = normalize(text1).split(/\s+/);
-    const words2 = normalize(text2).split(/\s+/);
-    
-    const set1 = new Set(words1);
-    const set2 = new Set(words2);
-    
-    const intersection = new Set([...set1].filter(x => set2.has(x)));
-    const union = new Set([...set1, ...set2]);
-    
-    return (intersection.size / union.size) * 100;
-  };
-
-  const checkForDuplicates = (newContent) => {
-    const warnings = [];
-    const recentHistory = contentHistory.slice(-50); // Check last 50 posts
-    
-    newContent.forEach((content, index) => {
-      recentHistory.forEach((historical, histIndex) => {
-        const similarity = calculateSimilarity(content.text, historical.text);
-        if (similarity > similarityThreshold) {
-          warnings.push({
-            index,
-            similarity: Math.round(similarity),
-            originalText: historical.text.substring(0, 100) + '...',
-            generatedDate: historical.date
-          });
-        }
-      });
-    });
-    
-    return warnings;
-  };
-
-  // ✅ FEATURE 3: MODEL PERFORMANCE TRACKING
-  const trackModelUsage = (model, success, engagementScore = 0) => {
-    const updatedStats = { ...modelStats };
-    
-    if (!updatedStats[model]) {
-      updatedStats[model] = {
-        totalUses: 0,
-        successfulGenerations: 0,
-        totalEngagementScore: 0,
-        averageEngagement: 0,
-        lastUsed: new Date().toISOString()
-      };
-    }
-    
-    updatedStats[model].totalUses += 1;
-    if (success) {
-      updatedStats[model].successfulGenerations += 1;
-    }
-    updatedStats[model].totalEngagementScore += engagementScore;
-    updatedStats[model].averageEngagement = 
-      updatedStats[model].totalEngagementScore / updatedStats[model].totalUses;
-    updatedStats[model].lastUsed = new Date().toISOString();
-    
-    setModelStats(updatedStats);
-    localStorage.setItem('ai_model_stats', JSON.stringify(updatedStats));
-  };
-
-  // ✅ ENHANCED PROMPT GENERATION WITH ROTATION
+  // Enhanced prompt generation with language detection
   const getEnhancedViralPrompt = (pageId, categoryId, topic = '', quantity) => {
     const page = pageProfiles[pageId];
     const category = categories[categoryId];
@@ -396,6 +373,10 @@ Montre l'évolution de l'énergie parentale sur une journée.`
       console.error('Page not found:', pageId);
       return 'Error: Page not found';
     }
+    
+    // Detect page language
+    const pageLanguage = page.language || 'french';
+    const isEnglish = pageLanguage.toLowerCase() === 'english';
     
     // Select formulas for rotation
     let formulas = [];
@@ -407,13 +388,51 @@ Montre l'évolution de l'énergie parentale sur une journée.`
       formulas = ['age_progression', 'confession', 'revelation'];
     }
     
-    // Build formula instructions
+    // Build formula instructions based on page language
     const formulaInstructions = formulas.map(formulaId => {
       const formula = viralFormulas[formulaId];
-      return formula ? formula.prompt : '';
+      if (!formula) return '';
+      
+      // Use language-specific prompts
+      if (isEnglish && formula.english) {
+        return formula.english.prompt;
+      } else if (formula.french) {
+        return formula.french.prompt;
+      }
+      return '';
     }).join('\n\n');
-    
-    const basePrompt = `Tu es un expert en contenu viral français pour ${page.name}.
+
+    // Create language-specific base prompt
+    if (isEnglish) {
+      return `You are a viral content expert for ${page.name}.
+
+PROVEN SUCCESS DATA:
+- Engagement: ${page.engagementData}
+- Audience: ${page.audience}
+- Tone: ${page.tone}
+
+${formulaInstructions}
+
+STRICT ENGLISH CONTENT RULES:
+- NO calls to action (Tag, Comment, Share)
+- NO emojis or symbols
+- NO markdown formatting (**, *)
+- Only natural English text
+- Blank line between each thought
+- Authentic American/English experiences
+- Vulnerability and imperfections, not perfection
+- 4-6 lines maximum per caption
+
+FORMULA DISTRIBUTION:
+- Use the ${formulas.length} formulas in a balanced way
+- Vary the order and structure
+- ${quantity} posts total
+
+${topic ? `SPECIFIC TOPIC: ${topic}` : ''}
+
+GENERATE ${quantity} viral posts using the selected formulas with proper English content.`;
+    } else {
+      return `Tu es un expert en contenu viral français pour ${page.name}.
 
 DONNÉES DE SUCCÈS PROUVÉES:
 - Engagement: ${page.engagementData}
@@ -442,8 +461,70 @@ DISTRIBUTION DES FORMULES:
 ${topic ? `SUJET SPÉCIFIQUE: ${topic}` : ''}
 
 GÉNÈRE ${quantity} posts viraux en utilisant les formules sélectionnées avec la TYPOGRAPHIE FRANÇAISE CORRECTE.`;
+    }
+  };
 
-    return basePrompt;
+  // Similarity detection
+  const calculateSimilarity = (text1, text2) => {
+    const normalize = (str) => str.toLowerCase().replace(/[^\w\s]/g, '').trim();
+    const words1 = normalize(text1).split(/\s+/);
+    const words2 = normalize(text2).split(/\s+/);
+    
+    const set1 = new Set(words1);
+    const set2 = new Set(words2);
+    
+    const intersection = new Set([...set1].filter(x => set2.has(x)));
+    const union = new Set([...set1, ...set2]);
+    
+    return (intersection.size / union.size) * 100;
+  };
+
+  const checkForDuplicates = (newContent) => {
+    const warnings = [];
+    const recentHistory = contentHistory.slice(-50);
+    
+    newContent.forEach((content, index) => {
+      recentHistory.forEach((historical) => {
+        const similarity = calculateSimilarity(content.text, historical.text);
+        if (similarity > similarityThreshold) {
+          warnings.push({
+            index,
+            similarity: Math.round(similarity),
+            originalText: historical.text.substring(0, 100) + '...',
+            generatedDate: historical.date
+          });
+        }
+      });
+    });
+    
+    return warnings;
+  };
+
+  // Model performance tracking
+  const trackModelUsage = (model, success, engagementScore = 0) => {
+    const updatedStats = { ...modelStats };
+    
+    if (!updatedStats[model]) {
+      updatedStats[model] = {
+        totalUses: 0,
+        successfulGenerations: 0,
+        totalEngagementScore: 0,
+        averageEngagement: 0,
+        lastUsed: new Date().toISOString()
+      };
+    }
+    
+    updatedStats[model].totalUses += 1;
+    if (success) {
+      updatedStats[model].successfulGenerations += 1;
+    }
+    updatedStats[model].totalEngagementScore += engagementScore;
+    updatedStats[model].averageEngagement = 
+      updatedStats[model].totalEngagementScore / updatedStats[model].totalUses;
+    updatedStats[model].lastUsed = new Date().toISOString();
+    
+    setModelStats(updatedStats);
+    localStorage.setItem('ai_model_stats', JSON.stringify(updatedStats));
   };
 
   // Clean captions function
@@ -511,32 +592,28 @@ GÉNÈRE ${quantity} posts viraux en utilisant les formules sélectionnées avec
       const data = await response.json();
       
       // Parse generated content - IMPROVED PARSING
-      const content = data.choices[0].message.content;
+      const rawContent = data.choices[0].message.content;
       
-      // Remove the intro text and split by post markers
-      let cleanContent = content;
-      
-      // Remove intro lines like "Voici cinq posts viraux..."
+      // Remove intro lines and clean content
+      let cleanContent = rawContent;
       cleanContent = cleanContent.replace(/^.*?voici.*?posts.*?:/i, '');
+      cleanContent = cleanContent.replace(/^.*?here.*?posts.*?:/i, '');
       
-      // Split by post markers (Post 1, Post 2, etc.) or by **Post markers
+      // Split by post markers or double line breaks
       const postSections = cleanContent.split(/\*\*Post \d+.*?\*\*|\bPost \d+.*?:|(?=\*\*Post \d+)|(?=Post \d+)/i).filter(section => section.trim().length > 0);
       
       const results = [];
       let captionCount = 0;
       
       postSections.forEach((section) => {
-        // Clean up the section
         let cleanSection = section
-          .replace(/^\*\*.*?\*\*/g, '') // Remove post headers
-          .replace(/^Post \d+.*?:/g, '') // Remove "Post N:" headers
-          .replace(/\*\*/g, '') // Remove all ** formatting
+          .replace(/^\*\*.*?\*\*/g, '')
+          .replace(/^Post \d+.*?:/g, '')
+          .replace(/\*\*/g, '')
           .trim();
         
-        // Skip empty sections or intro text
         if (cleanSection.length < 50) return;
         
-        // If section contains multiple paragraphs, treat each as potential caption
         const paragraphs = cleanSection.split('\n\n').filter(p => p.trim().length > 50);
         
         paragraphs.forEach((paragraph) => {
@@ -555,12 +632,13 @@ GÉNÈRE ${quantity} posts viraux en utilisant les formules sélectionnées avec
         });
       });
       
-      // If we still don't have enough results, try splitting by double line breaks
+      // Fallback parsing if needed
       if (results.length < quantity) {
-        const fallbackSections = content.split('\n\n').filter(section => {
+        const fallbackSections = rawContent.split('\n\n').filter(section => {
           const clean = section.replace(/\*\*/g, '').trim();
           return clean.length > 50 && 
                  !clean.toLowerCase().includes('voici') && 
+                 !clean.toLowerCase().includes('here') &&
                  !clean.toLowerCase().includes('post');
         });
         
@@ -591,13 +669,11 @@ GÉNÈRE ${quantity} posts viraux en utilisant les formules sélectionnées avec
         date: new Date().toISOString(),
         model: selectedModel
       }))];
-      setContentHistory(newHistory.slice(-100)); // Keep last 100
+      setContentHistory(newHistory.slice(-100));
       localStorage.setItem('content_history', JSON.stringify(newHistory.slice(-100)));
       
       setGeneratedContent(results);
-      
-      // Track model performance
-      trackModelUsage(selectedModel, true, results.length * 10); // Base score
+      trackModelUsage(selectedModel, true, results.length * 10);
       
     } catch (error) {
       console.error('Generation error:', error);
@@ -644,7 +720,7 @@ GÉNÈRE ${quantity} posts viraux en utilisant les formules sélectionnées avec
             🧠 Enhanced AI Caption Generator
           </h1>
           <p className="text-lg text-gray-600">
-            Smart viral captions with rotation, tracking & duplicate detection
+            Smart viral captions with language detection, rotation & tracking
           </p>
           
           {/* URL Parameters Notice */}
@@ -1056,7 +1132,7 @@ GÉNÈRE ${quantity} posts viraux en utilisant les formules sélectionnées avec
                 <div className="text-center py-12 text-gray-500">
                   <Brain className="w-16 h-16 mx-auto mb-4 text-gray-300" />
                   <p className="text-lg">Configure settings and generate smart viral captions</p>
-                  <p className="text-sm">Features: Formula rotation, duplicate detection, performance tracking</p>
+                  <p className="text-sm">Features: Language detection, formula rotation, duplicate detection, performance tracking</p>
                   {customTopic && (
                     <div className="mt-4 bg-blue-50 rounded-lg p-3">
                       <p className="text-blue-700 text-sm">
@@ -1148,7 +1224,7 @@ GÉNÈRE ${quantity} posts viraux en utilisant les formules sélectionnées avec
                           Send All to Bulk Generator →
                         </button>
                         <p className="text-sm text-gray-500 mt-2">
-                          Generate images for all {generatedContent.length} texts with perfect French typography
+                          Generate images for all {generatedContent.length} texts with perfect typography
                         </p>
                       </div>
                       
@@ -1177,12 +1253,12 @@ GÉNÈRE ${quantity} posts viraux en utilisant les formules sélectionnées avec
             <div className="bg-white rounded-lg p-4">
               <div className="text-2xl mb-2">🔄</div>
               <div className="font-bold text-gray-800">1. Smart Generation</div>
-              <div className="text-sm text-gray-600">Rotated formulas, duplicate detection, performance tracking</div>
+              <div className="text-sm text-gray-600">Language detection, rotated formulas, duplicate detection, performance tracking</div>
             </div>
             <div className="bg-white rounded-lg p-4">
-              <div className="text-2xl mb-2">🇫🇷</div>
-              <div className="font-bold text-gray-800">2. Fix Typography</div>
-              <div className="text-sm text-gray-600">Perfect French apostrophes and formatting</div>
+              <div className="text-2xl mb-2">🌍</div>
+              <div className="font-bold text-gray-800">2. Language Detection</div>
+              <div className="text-sm text-gray-600">Perfect French or English content based on page language</div>
             </div>
             <div className="bg-white rounded-lg p-4">
               <div className="text-2xl mb-2">🧹</div>

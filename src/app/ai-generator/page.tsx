@@ -299,7 +299,7 @@ Continue pour tous les ${quantity} posts.`;
             }
           ],
           temperature: 0.8,
-          max_tokens: 3000
+          max_tokens: Math.max(6000, quantity * 400)
         })
       });
 

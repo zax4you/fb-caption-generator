@@ -8,8 +8,7 @@ const AICaptionGenerator = () => {
   const [quantity, setQuantity] = useState(5);
   const [generatedContent, setGeneratedContent] = useState([]);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [apiKey, setApiKey] = useState('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');
-  const [showSettings, setShowSettings] = useState(false);
+  const [apiKey, setApiKey] = useState('');  const [showSettings, setShowSettings] = useState(false);
   const [copiedIndex, setCopiedIndex] = useState(null);
 
   // Page profiles based on your research

@@ -140,8 +140,11 @@ const AICaptionGenerator = () => {
     let categoryPrompt = '';
     let exampleFormats = '';
     
-    if (categoryId === 'mixed-viral') {
-      categoryPrompt = `Generate a MIX of all content types for maximum variety:
+// Update the getViralPrompt function in your AI generator
+// Replace the example formats section with better spacing:
+
+if (categoryId === 'mixed-viral') {
+  categoryPrompt = `Generate a MIX of all content types for maximum variety:
 - Family & Relationships (parent struggles, marriage wisdom)
 - Life Wisdom (age revelations, personal growth)  
 - Motivation & Success (dreams, transformation)
@@ -150,73 +153,101 @@ const AICaptionGenerator = () => {
 
 Distribute evenly across all categories.`;
 
-      exampleFormats = `
-EXAMPLE FORMATS (vary the structure):
+  exampleFormats = `
+EXAMPLE FORMATS (with proper spacing between lines):
 
 Format 1 - Age Revelation:
 À 40 ans, j'ai compris
+
 Nos parents avaient raison sur TOUT
+
 Mais on était trop fiers pour l'admettre
 
 Format 2 - Wisdom Statement:
 20 ans de mariage m'ont appris
+
 L'amour, ce n'est pas les papillons dans le ventre
+
 C'est rester quand il n'y en a plus
 
 Format 3 - Nostalgic Reflection:
 Qui se souvient des appels téléphoniques à heure fixe
+
 Des cassettes qu'il fallait rembobiner
+
 Du stress quand on ratait son émission`;
-    } else {
-      categoryPrompt = `CATEGORY: ${category.name} - ${category.description}`;
-      
-      if (categoryId === 'family-relationships') {
-        exampleFormats = `
+} else {
+  categoryPrompt = `CATEGORY: ${category.name} - ${category.description}`;
+  
+  if (categoryId === 'family-relationships') {
+    exampleFormats = `
 FAMILY & RELATIONSHIPS EXAMPLES:
 À 40 ans, j'ai compris
+
 Nos parents avaient raison sur TOUT
+
 Mais on était trop fiers pour l'admettre
 
+---
+
 Mes enfants: Maman, tu fais comment
+
 Moi: Attends, je googlelise
+
 La technologie a tout changé`;
-      } else if (categoryId === 'life-wisdom') {
-        exampleFormats = `
+  } else if (categoryId === 'life-wisdom') {
+    exampleFormats = `
 LIFE WISDOM EXAMPLES:
 Personne ne m'avait dit qu'à 45 ans
+
 Je serais encore en train de chercher ma voie
+
 Et que c'est complètement normal
 
+---
+
 J'ai mis 30 ans à comprendre
+
 L'argent ne fait pas le bonheur
+
 Mais l'absence d'argent fait le malheur`;
-      } else if (categoryId === 'motivation-success') {
-        exampleFormats = `
+  } else if (categoryId === 'motivation-success') {
+    exampleFormats = `
 MOTIVATION & SUCCESS EXAMPLES:
 J'ai échoué 100 fois avant mes 50 ans
+
 Puis j'ai compris
+
 Chaque échec me rapprochait du succès
 
+---
+
 À 35 ans, j'ai abandonné mon rêve
+
 À 45 ans, je l'ai repris
+
 Aujourd'hui, je vis de ma passion`;
-      } else if (categoryId === 'nostalgia-memory') {
-        exampleFormats = `
+  } else if (categoryId === 'nostalgia-memory') {
+    exampleFormats = `
 NOSTALGIA & MEMORY EXAMPLES:
 Il y a 20 ans, je me disais
+
 À 40 ans, j'aurai tout compris
+
 Spoiler alert: Je comprends encore moins qu'avant`;
-      } else if (categoryId === 'humor-social') {
-        exampleFormats = `
+  } else if (categoryId === 'humor-social') {
+    exampleFormats = `
 HUMOR & SOCIAL COMMENTARY EXAMPLES:
 Avant: Va jouer dehors
-Maintenant: Mets ta crème solaire, ton casque, 
-tes genouillères et ton portable avec le GPS activé
+
+Maintenant: Mets ta crème solaire, ton casque, tes genouillères et ton portable avec le GPS activé
+
 Les temps changent`;
-      }
-    }
-    
-    const basePrompt = `You are creating VIRAL FACEBOOK CAPTIONS for ${page.name}, a ${page.niche} page.
+  }
+}
+
+// And update the main prompt instructions:
+const basePrompt = `You are creating VIRAL FACEBOOK CAPTIONS for ${page.name}, a ${page.niche} page.
 
 PROVEN SUCCESS DATA:
 - Current engagement: ${page.engagementData}
@@ -233,7 +264,7 @@ Each caption MUST follow this 3-part structure:
    - "Personne ne m'avait dit qu'à [age] ans..."
    - "[Number] ans de [experience] m'ont appris:"
 
-2. REVELATION/STORY (3-5 lines): The main insight or story
+2. REVELATION/STORY (2-4 lines): The main insight or story
    - Personal vulnerability or universal truth
    - Emotional connection with the audience
    - Relatable life experience
@@ -249,13 +280,23 @@ ${exampleFormats}
 
 CONTENT REQUIREMENTS:
 - Generate ${quantity} complete viral captions
-- Each caption should be 4-7 lines long with natural line breaks
+- Each caption should be 4-6 lines long
+- IMPORTANT: Add empty line breaks between each thought/line for better readability
 - NO call-to-action requests (no "Tag quelqu'un", "Commentez", etc.)
 - NO emojis or special characters
 - Age references should target ${page.audience}
 - Use PLAIN TEXT ONLY - no markdown formatting (**, *, etc.)
-- Each line should be a complete thought
-- Natural paragraph breaks between concepts
+- Each line should be a complete thought followed by an empty line
+
+SPACING FORMAT (CRITICAL):
+Each caption should look like this:
+Line 1 (Hook)
+
+Line 2 (Story part 1)
+
+Line 3 (Story part 2)
+
+Line 4 (Conclusion)
 
 PSYCHOLOGICAL TRIGGERS TO INCLUDE:
 - Nostalgia and time passage
@@ -267,16 +308,16 @@ PSYCHOLOGICAL TRIGGERS TO INCLUDE:
 FORMAT YOUR RESPONSE EXACTLY AS:
 
 CAPTION 1:
-[Multi-line caption with natural line breaks, no CTA, no formatting]
+[Multi-line caption with empty lines between each thought]
 BACKGROUND: [suggested background color]
 
 CAPTION 2:
-[Multi-line caption with natural line breaks, no CTA, no formatting]
+[Multi-line caption with empty lines between each thought]
 BACKGROUND: [suggested background color]
 
 Continue for all ${quantity} captions.
 
-Make each caption emotionally powerful and naturally shareable without forced engagement requests.`;
+Make each caption emotionally powerful and naturally shareable with proper visual spacing for Facebook images.`;
 
     return basePrompt;
   };

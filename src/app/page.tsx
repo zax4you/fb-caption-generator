@@ -1,12 +1,11 @@
 'use client'
-
 import { useState } from 'react'
 import Link from 'next/link'
 import CanvasGenerator from './components/CanvasGenerator'
 
 export default function Home() {
   const [generatedImages, setGeneratedImages] = useState<any[]>([])
-
+  
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="bg-white/95 backdrop-blur-lg rounded-3xl p-8 shadow-2xl">
@@ -21,17 +20,25 @@ export default function Home() {
           >
             📊 Bulk Generation
           </Link>
+          
+          <Link 
+            href="/ai-generator" 
+            className="inline-block bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+          >
+            🤖 AI Text Generator
+          </Link>
+          
           <button className="inline-block bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
             ✨ Single Caption
           </button>
         </div>
-
+        
         <CanvasGenerator 
           onImageGenerated={(imageData) => {
             setGeneratedImages(prev => [...prev, imageData])
           }}
         />
-
+        
         {generatedImages.length > 0 && (
           <div className="mt-8 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-6">
             <h3 className="text-2xl font-bold text-gray-800 mb-6">

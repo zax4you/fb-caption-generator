@@ -509,7 +509,6 @@ GÉNÈRE ${quantity} posts viraux en utilisant les formules sélectionnées avec
       }
 
       const data = await response.json();
-      const content = data.choices[0].message.content;
       
       // Parse generated content - IMPROVED PARSING
       const content = data.choices[0].message.content;

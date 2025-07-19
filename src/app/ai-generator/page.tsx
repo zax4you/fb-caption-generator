@@ -1002,8 +1002,9 @@ GÉNÈRE ${quantity} posts viraux en utilisant les formules sélectionnées avec
                         </button>
                       </div>
                     </div>
-                  </>
-                )}
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -1039,7 +1040,7 @@ GÉNÈRE ${quantity} posts viraux en utilisant les formules sélectionnées avec
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default EnhancedAICaptionGenerator;
+export default EnhancedAICaptionGenerator

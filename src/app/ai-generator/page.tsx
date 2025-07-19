@@ -1,3 +1,6 @@
+// COMPLETE AI Generator with Clean Captions Feature
+// Replace your entire /src/app/ai-generator/page.tsx file with this
+
 'use client'
 
 import React, { useState } from 'react';
@@ -10,11 +13,12 @@ const AICaptionGenerator = () => {
   const [quantity, setQuantity] = useState(5);
   const [generatedContent, setGeneratedContent] = useState([]);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [apiKey, setApiKey] = useState(''); // 🔒 SECURE: Empty by default
+  const [apiKey, setApiKey] = useState('');
   const [showSettings, setShowSettings] = useState(false);
   const [copiedIndex, setCopiedIndex] = useState(null);
+  const [isCleaningCaptions, setIsCleaningCaptions] = useState(false); // ✅ NEW: Clean state
 
-  // Page profiles based on your research
+  // Page profiles
   const pageProfiles = {
     'momix-famille': {
       name: 'Momix en Famille',
@@ -40,7 +44,7 @@ const AICaptionGenerator = () => {
     }
   };
 
-  // AI Models selection
+  // AI Models
   const aiModels = {
     'anthropic/claude-3.5-sonnet': {
       name: 'Claude 3.5 Sonnet',
@@ -76,7 +80,7 @@ const AICaptionGenerator = () => {
 
   const [selectedModel, setSelectedModel] = useState('anthropic/claude-3.5-sonnet');
 
-  // Categories with viral formulas from your research
+  // Categories
   const categories = {
     'family-relationships': {
       name: '👨‍👩‍👧‍👦 Family & Relationships',
@@ -110,364 +114,158 @@ const AICaptionGenerator = () => {
     }
   };
 
-  // ✅ ENHANCED: Clean text function to remove all formatting
+  // ✅ ENHANCED: Super aggressive text cleaning
   const cleanText = (text) => {
     return text
-      .replace(/^\*\*\s*/, '')                    // Remove ** at the beginning
-      .replace(/\s*\*\*$/, '')                    // Remove ** at the end
-      .replace(/\*\*/g, '')                       // Remove all other ** 
-      .replace(/\*/g, '')                         // Remove single *
+      .replace(/^\*\*\s*/, '')                    // Remove ** at beginning
+      .replace(/\s*\*\*$/, '')                    // Remove ** at end  
+      .replace(/\*\*/g, '')                       // Remove all **
+      .replace(/\*/g, '')                         // Remove all *
       .replace(/_{2,}/g, '')                      // Remove __
       .replace(/`+/g, '')                         // Remove backticks
       .replace(/#{1,6}\s*/g, '')                  // Remove headers
-      .replace(/^\s*[-*+]\s*/gm, '')              // Remove bullet points
-      .replace(/^\s*\d+\.\s*/gm, '')              // Remove numbered lists
-      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')    // Convert links
-      .replace(/Tag\s+[^.!?]*[.!?]/gi, '')        // Remove CTA sentences
-      .replace(/Commentez\s+[^.!?]*[.!?]/gi, '')  // Remove comment requests
-      .replace(/Partagez\s+[^.!?]*[.!?]/gi, '')   // Remove share requests
-      .replace(/Qui\s+est\s+d'accord[^.!?]*[.!?]/gi, '') // Remove agreement requests
-      .replace(/👇|🔥|✨|💰|📱|❤️|💯|😅|🤔|💙/g, '') // Remove common emojis
-      .replace(/["""]/g, '')                      // Remove smart quotes
+      .replace(/^\s*[-*+]\s*/gm, '')              // Remove bullets
+      .replace(/^\s*\d+\.\s*/gm, '')              // Remove numbers
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')    // Convert links to text
+      
+      // ✅ REMOVE ALL CTAs (comprehensive list)
+      .replace(/Tag\s+[^.!?\n]*[.!?\n]/gi, '')
+      .replace(/Commentez\s+[^.!?\n]*[.!?\n]/gi, '')
+      .replace(/Partagez\s+[^.!?\n]*[.!?\n]/gi, '')
+      .replace(/Qui\s+est\s+d'accord[^.!?\n]*[.!?\n]/gi, '')
+      .replace(/Likez\s+[^.!?\n]*[.!?\n]/gi, '')
+      .replace(/Suivez\s+[^.!?\n]*[.!?\n]/gi, '')
+      .replace(/Abonnez-vous[^.!?\n]*[.!?\n]/gi, '')
+      .replace(/Dites-moi\s+[^.!?\n]*[.!?\n]/gi, '')
+      .replace(/Réagissez\s+[^.!?\n]*[.!?\n]/gi, '')
+      
+      // ✅ REMOVE ALL EMOJIS (comprehensive list)
+      .replace(/🤗|🌟|💕|👇|🔥|✨|💰|📱|❤️|💯|😅|🤔|💙|👨‍👩‍👧‍👦|🧠|⚡|💭|😂|🎯|🚀|💪|🙌|👏|💜|🖤|💚|💛|🧡|❤️‍🔥|💖|💝|💗|💓|💘|💋|👀|🤯|😍|🥰|😘|😊|😄|😃|😂|🤣|😆|😁|🙂|🙃|😉|😇|🥺|😢|😭|😤|😠|😡|🤬|🤢|🤮|🤧|😷|🤒|🤕|🤠|🤡|🤥|🤓|😎|🧐|🤨|😐|😑|😶|😏|😒|🙄|😬|🤐|🤫|🤭|😯|😦|😧|😮|😲|🥱|😴|🤤|😪|😵|🤐|🥴|🤢|🤮|🤧|😷|🤒|🤕|🤑|🤠|😈|👿|👹|👺|🤡|💩|👻|💀|☠️|👽|👾|🤖|🎃|😺|😸|😹|😻|😼|😽|🙀|😿|😾/g, '')
+      
+      // ✅ CLEAN FORMATTING
+      .replace(/["""'']/g, '')                    // Remove smart quotes
+      .replace(/\s{3,}/g, '\n\n')                 // Convert multiple spaces to double line break
+      .replace(/\n{3,}/g, '\n\n')                 // Limit line breaks to maximum 2
+      .replace(/^\s+|\s+$/g, '')                  // Trim whitespace at start/end
       .trim();
   };
 
-  // Enhanced viral formulas based on your successful captions analysis
+  // ✅ NEW: Clean all captions function
+  const cleanAllCaptions = () => {
+    if (generatedContent.length === 0) {
+      alert('No captions to clean. Generate some content first!');
+      return;
+    }
+
+    setIsCleaningCaptions(true);
+    
+    // Clean all captions
+    const cleanedContent = generatedContent.map(content => ({
+      ...content,
+      text: cleanText(content.text)
+    }));
+    
+    setGeneratedContent(cleanedContent);
+    
+    // Show success message
+    setTimeout(() => {
+      setIsCleaningCaptions(false);
+      alert(`✅ Cleaned ${cleanedContent.length} captions!\n\nRemoved: markdown, emojis, CTAs, and formatting issues.`);
+    }, 1000);
+  };
+
+  // ✅ NEW: Individual caption cleaning
+  const cleanSingleCaption = (captionId) => {
+    const updatedContent = generatedContent.map(content => {
+      if (content.id === captionId) {
+        return {
+          ...content,
+          text: cleanText(content.text)
+        };
+      }
+      return content;
+    });
+    
+    setGeneratedContent(updatedContent);
+  };
+
+  // ✅ COMPLETELY NEW: Enhanced viral prompt
   const getViralPrompt = (pageId, categoryId, topic = '', quantity) => {
     const page = pageProfiles[pageId];
-    const category = categories[categoryId];
     
-    let categoryPrompt = '';
-    let exampleFormats = '';
-    
-// Update the getViralPrompt function in your AI generator
-// Replace the example formats section with better spacing:
+    const basePrompt = `Tu crées des POSTS VIRAUX FACEBOOK pour ${page.name}, une page ${page.niche}.
 
-// 🌙 TONIGHT: Update your AI prompts with these enhanced viral formulas
-// Replace the exampleFormats section in your getViralPrompt function:
+DONNÉES DE SUCCÈS PROUVÉES:
+- Engagement actuel: ${page.engagementData}
+- Audience: ${page.audience}
+- Ton: ${page.tone}
 
-if (categoryId === 'mixed-viral') {
-  categoryPrompt = `Generate a MIX of all content types for maximum variety:
-- Family & Relationships (parent struggles, marriage wisdom)
-- Life Wisdom (age revelations, personal growth)  
-- Motivation & Success (dreams, transformation)
-- Nostalgia & Memory (childhood memories, "remember when")
-- Humor & Social Commentary (technology struggles, modern parenting)
+FORMULES VIRALES OBLIGATOIRES - Utilise EXACTEMENT ces structures:
 
-Distribute evenly across all categories.`;
+FORMULE 1 - Progression d'âge:
+À 20 ans: [croyance jeune]
 
-  exampleFormats = `
-PROVEN VIRAL FORMATS (use these exact structures):
+À 30 ans: [réalisation]
 
-Format 1 - Age Progression Series:
-À 20 ans: Je vais changer le monde
+À 40 ans: [vérité mature]
 
-À 30 ans: Je vais changer mon travail
+À 50 ans: [sagesse finale]
 
-À 40 ans: Je vais changer mes habitudes
+FORMULE 2 - Avant/Maintenant:
+Avant d'être parent: [naïveté]
 
-À 50 ans: Finalement, je me change moi
+Maintenant: [réalité crue]
 
-Format 2 - Reality Check:
-Avant d'être parent: Je ne comprenais pas pourquoi les gens étaient si fatigués
+[Conclusion humble]
 
-Maintenant: 'Bonjour' à 6h du matin me semble être une agression personnelle
+FORMULE 3 - Perspectives multiples:
+Les enfants: [demande]
 
-Format 3 - Multiple Perspectives:
-Les enfants: Papa, tu peux nous aider?
+Moi le matin: [bonne volonté]
 
-Moi à 7h: Bien sûr, avec plaisir!
+Moi le soir: [réalité fatiguée]
 
-Moi à 20h: Demandez à Google
+FORMULE 4 - Révélation d'âge:
+À [âge] ans, j'ai enfin compris
 
-Format 4 - Revelation Pattern:
-À 45 ans, j'ai enfin compris
+[Vérité cachée sur un aspect de la vie]
 
-Pourquoi ma mère me disait toujours de ranger ma chambre
+[Explication de pourquoi c'est important]
 
-Ce n'était pas pour la chambre
+[Conclusion naturelle]
 
-C'était pour m'apprendre la discipline
-
-Format 5 - Nostalgia Hook:
-Qui se souvient quand on devait attendre 20h pour voir notre série préférée
-
-Pas de replay, pas de pause
-
-Si tu ratais un épisode, tu étais perdu pour toujours
-
-Format 6 - Marriage/Relationship Truth:
-20 ans de mariage m'ont appris
-
-L'amour, ce n'est pas de ne jamais se disputer
-
-C'est de se réconcilier à chaque fois
-
-Format 7 - Parent Reality:
-Mes enfants croient que je sais tout
-
-En réalité, je googlelise discrètement
-
-Depuis 15 ans`;
-} else {
-  // Category-specific enhanced examples
-  categoryPrompt = `CATEGORY: ${category.name} - ${category.description}`;
-  
-  if (categoryId === 'family-relationships') {
-    exampleFormats = `
-FAMILY & RELATIONSHIPS - PROVEN VIRAL EXAMPLES:
-
-Example 1 - Parent Evolution:
-Avant mes enfants: Les parents qui crient sont de mauvais parents
-
-Maintenant: 'ARRÊTEZ DE COURIR DANS LA MAISON!'
-
-Je me suis excusée auprès de ma mère
-
-Example 2 - Marriage Reality:
-Mon mari: Tu veux qu'on regarde quoi ce soir?
-
-Moi: N'importe quoi
-
-Lui: *Met un film d'action*
-
-Moi: Pas ça
-
-Nous, tous les soirs depuis 15 ans
-
-Example 3 - Generation Gap:
-Mes parents à mon âge: Maison, 2 enfants, voiture neuve
-
-Moi au même âge: Je partage un Netflix avec 4 personnes
-
-Et je trouve ça déjà bien
-
-Example 4 - Family Truth:
-À 40 ans, j'ai compris
-
-Mes parents n'avaient pas toutes les réponses
-
-Ils improvisaient autant que moi
-
-Mais ils le cachaient mieux`;
-  } else if (categoryId === 'life-wisdom') {
-    exampleFormats = `
-LIFE WISDOM - PROVEN VIRAL EXAMPLES:
-
-Example 1 - Age Revelation:
-À 35 ans: Je pensais avoir tout compris
-
-À 45 ans: Je réalise que je ne sais rien
-
-À 55 ans: J'accepte enfin de ne pas savoir
-
-Et c'est libérateur
-
-Example 2 - Money Truth:
-J'ai mis 30 ans à comprendre
-
-L'argent ne fait pas le bonheur
-
-Mais l'absence d'argent fait le malheur
-
-Nuance importante
-
-Example 3 - Career Reality:
-Travailler dur ne garantit pas le succès
-
-Travailler intelligemment non plus
-
-Parfois, c'est juste une question de timing
-
-Et un peu de chance
-
-Example 4 - Life Priority:
-À 20 ans: Je veux être riche
-
-À 30 ans: Je veux être reconnu
-
-À 40 ans: Je veux juste dormir 8h d'affilée
-
-Les priorités changent`;
-  } else if (categoryId === 'nostalgia-memory') {
-    exampleFormats = `
-NOSTALGIA & MEMORY - PROVEN VIRAL EXAMPLES:
-
-Example 1 - Technology Evolution:
+FORMULE 5 - Nostalgie technologique:
 Se souvenir quand:
 
-On devait se lever pour changer de chaîne
+[Contrainte technologique d'avant]
 
-Le téléphone était attaché au mur
+[Autre contrainte]
 
-Internet faisait du bruit en se connectant
+[Réflexion sur le changement]
 
-Example 2 - Childhood Memories:
-Les étés de notre enfance duraient 3 mois
+RÈGLES STRICTES:
+- AUCUN appel à l'action (Tag, Commentez, Partagez)
+- AUCUN emoji ou symbole
+- AUCUN formatage markdown (**, *)
+- Seulement du texte français naturel
+- Ligne vide entre chaque pensée
+- Expériences spécifiquement françaises
+- Vulnérabilité et imperfections, pas de perfection
+- 4-6 lignes maximum par caption
 
-Maintenant, les vacances passent en 3 jours
+GÉNÈRE ${quantity} posts en utilisant les formules ci-dessus.
 
-Soit le temps a accéléré
-
-Soit on a perdu la magie
-
-Example 3 - Social Evolution:
-Avant: On se donnait rendez-vous et on y était
-
-Maintenant: 'Je suis en route' peut vouloir dire 'Je commence à me préparer'
-
-La ponctualité, c'était mieux avant
-
-Example 4 - Communication Change:
-À l'époque: On appelait pour dire qu'on était bien arrivé
-
-Maintenant: On envoie sa localisation en temps réel
-
-Mais on se parle moins`;
-  } else if (categoryId === 'humor-social') {
-    exampleFormats = `
-HUMOR & SOCIAL COMMENTARY - PROVEN VIRAL EXAMPLES:
-
-Example 1 - Modern Parenting:
-Avant: 'Va jouer dehors!'
-
-Maintenant: 'Mets ta crème solaire, ton casque, tes genouillères, prends ton portable et reste où je peux te voir'
-
-L'époque a changé
-
-Example 2 - Technology Struggle:
-Mes enfants: 'Papa, tu fais comment pour ça?'
-
-Moi: 'Attends, je googlelise...'
-
-Eux: *Roulent des yeux*
-
-Moi, fier de ma technique de recherche
-
-Example 3 - Shopping Evolution:
-Avant: On faisait les courses une fois par semaine
-
-Maintenant: Amazon Prime en 2h
-
-Mais on passe plus de temps à choisir quoi regarder sur Netflix
-
-Example 4 - Social Media Reality:
-Instagram: Ma vie est parfaite
-
-Facebook: Regardez mes enfants adorables
-
-En réalité: Je n'ai pas dormi et j'ai mangé des céréales pour le dîner`;
-  } else if (categoryId === 'motivation-success') {
-    exampleFormats = `
-MOTIVATION & SUCCESS - PROVEN VIRAL EXAMPLES:
-
-Example 1 - Failure Reframe:
-J'ai échoué 47 fois avant mes 40 ans
-
-Puis j'ai compris
-
-Chaque échec me rapprochait du succès
-
-Maintenant, j'échoue plus vite
-
-Example 2 - Dream Evolution:
-À 25 ans: Je vais changer le monde
-
-À 35 ans: Je vais changer mon secteur
-
-À 45 ans: Si je peux changer ma famille, c'est déjà bien
-
-Les rêves s'ajustent
-
-Example 3 - Success Definition:
-Le succès, ce n'est pas d'avoir tout
-
-C'est de ne plus avoir envie de tout avoir
-
-J'ai mis 40 ans à le comprendre
-
-Example 4 - Career Truth:
-Personne ne m'avait dit qu'à 45 ans
-
-Je changerais encore de voie
-
-Et que c'est normal
-
-La vie n'est pas linéaire`;
-  }
-}
-
-// Enhanced base prompt with viral psychology
-const basePrompt = `You are creating VIRAL FACEBOOK CAPTIONS for ${page.name}, a ${page.niche} page.
-
-PROVEN SUCCESS DATA:
-- Current engagement: ${page.engagementData}
-- Audience: ${page.audience}
-- Demographics: ${page.demographics}
-- Language: ${page.language}
-- Tone: ${page.tone}
-
-VIRAL PSYCHOLOGY RULES (MANDATORY):
-1. RELATABILITY: Use experiences 85% of your audience has had
-2. SURPRISE TWIST: Start with common belief, end with unexpected truth  
-3. VULNERABILITY: Admit imperfections or failures
-4. GENERATIONAL BRIDGE: Connect different age perspectives
-5. UNIVERSAL TRUTH: Something everyone knows but rarely says out loud
-
-FORBIDDEN ELEMENTS:
-- Generic motivational quotes
-- Preachy advice  
-- Perfect scenarios
-- Unrealistic expectations
-- Overly positive content without struggle
-
-VIRAL CAPTION STRUCTURE (MANDATORY):
-Each caption MUST follow this structure:
-
-1. HOOK (1 line): Age-specific opener or situation setup
-2. STORY/CONTRAST (2-3 lines): The revelation, comparison, or reality
-3. TWIST/TRUTH (1 line): The unexpected insight or honest admission
-4. RESOLUTION (1 line): Natural conclusion that feels complete
-
-${categoryPrompt}
-${topic ? `SPECIFIC TOPIC: ${topic}` : ''}
-
-${exampleFormats}
-
-CONTENT REQUIREMENTS:
-- Generate ${quantity} complete viral captions
-- Each caption should be 4-6 lines with empty lines between thoughts
-- Use PROVEN viral formulas from examples above
-- NO call-to-action requests (no "Tag quelqu'un", "Commentez", etc.)
-- NO emojis or special characters
-- Age references should target ${page.audience}
-- Use PLAIN TEXT ONLY - no markdown formatting
-- Focus on ANTI-PERFECT content (struggles, not solutions)
-
-FRENCH CULTURAL SPECIFICITY:
-- Reference French family dynamics
-- Use French generational experiences
-- Include French cultural touchstones (TV shows, social norms)
-- Acknowledge French parenting/marriage realities
-
-EMOTIONAL TRIGGER WORDS TO USE:
-- "En réalité", "La vérité c'est que", "Personne ne le dit mais"
-- "J'ai mis X ans à comprendre", "À X ans, j'ai réalisé"
-- "Avant/Maintenant", "À l'époque/Aujourd'hui"
-
-FORMAT YOUR RESPONSE EXACTLY AS:
+FORMAT DE RÉPONSE:
 
 CAPTION 1:
-[Multi-line caption with empty lines between thoughts, following proven viral formulas]
-BACKGROUND: [suggested background color]
+[Texte avec lignes vides entre les pensées]
+BACKGROUND: [couleur suggérée]
 
 CAPTION 2:
-[Multi-line caption with empty lines between thoughts, following proven viral formulas]  
-BACKGROUND: [suggested background color]
+[Texte avec lignes vides entre les pensées]
+BACKGROUND: [couleur suggérée]
 
-Continue for all ${quantity} captions.
-
-Make each caption emotionally powerful using proven viral psychology and authentic French cultural experiences.`;
+Continue pour tous les ${quantity} posts.`;
 
     return basePrompt;
   };
@@ -512,7 +310,7 @@ Make each caption emotionally powerful using proven viral psychology and authent
       const data = await response.json();
       const content = data.choices[0].message.content;
       
-      // ✅ ENHANCED: Parse the structured response for full captions
+      // ✅ ENHANCED: Better parsing
       const captionMatches = content.match(/CAPTION \d+:\s*([\s\S]*?)(?=BACKGROUND:|$)/gi);
       const backgroundMatches = content.match(/BACKGROUND:\s*([^\n]+)/gi);
       
@@ -524,7 +322,6 @@ Make each caption emotionally powerful using proven viral psychology and authent
           
           return {
             id: index + 1,
-            // ✅ APPLY ENHANCED CLEANING
             text: cleanText(captionText),
             background: backgroundText
           };
@@ -532,14 +329,13 @@ Make each caption emotionally powerful using proven viral psychology and authent
         
         setGeneratedContent(parsedContent);
       } else {
-        // ✅ ENHANCED: Fallback parsing for different formats
+        // Fallback parsing
         const sections = content.split(/CAPTION \d+:|TEXT \d+:/i).filter(section => section.trim().length > 10);
         const fallbackContent = sections.slice(0, quantity).map((section, index) => {
           const lines = section.split('\n').filter(line => line.trim().length > 0);
           const textLines = lines.filter(line => !line.includes('BACKGROUND:'));
           const backgroundLine = lines.find(line => line.includes('BACKGROUND:'));
           
-          // ✅ APPLY ENHANCED CLEANING TO FALLBACK TOO
           const text = cleanText(textLines.join('\n'));
           const background = backgroundLine ? 
             backgroundLine.replace(/BACKGROUND:\s*/i, '').trim() : 
@@ -578,17 +374,13 @@ Make each caption emotionally powerful using proven viral psychology and authent
       return;
     }
 
-    // Format data for bulk generator
     const bulkData = generatedContent.map((content, index) => ({
       text: content.text,
       background: content.background,
       id: index + 1
     }));
 
-    // Store in localStorage for bulk generator to pickup
     localStorage.setItem('aiGeneratedTexts', JSON.stringify(bulkData));
-    
-    // Redirect to bulk generator
     window.location.href = '/bulk?source=ai-generator';
   };
 
@@ -696,8 +488,6 @@ Make each caption emotionally powerful using proven viral psychology and authent
                     </option>
                   ))}
                 </select>
-                
-                {/* Model Info */}
                 <div className="mt-2 p-2 bg-gray-50 rounded text-xs text-gray-600">
                   {aiModels[selectedModel]?.description}
                 </div>
@@ -720,8 +510,6 @@ Make each caption emotionally powerful using proven viral psychology and authent
                     </option>
                   ))}
                 </select>
-                
-                {/* Page Info */}
                 <div className="mt-3 p-3 bg-gray-50 rounded-lg text-sm">
                   <div className="text-gray-700">
                     <strong>Audience:</strong> {pageProfiles[selectedPage]?.audience}<br/>
@@ -837,63 +625,133 @@ Make each caption emotionally powerful using proven viral psychology and authent
                   <p className="text-sm">Multi-line captions based on 289% engagement research</p>
                 </div>
               ) : (
-                <div className="space-y-6">
-                  {generatedContent.map((content, index) => (
-                    <div key={content.id} className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                          <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-lg text-sm font-medium">
-                            Caption {content.id}
-                          </span>
-                          <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded-lg text-sm">
-                            {content.background} Background
-                          </span>
-                          <span className="bg-green-100 text-green-800 px-2 py-1 rounded-lg text-xs">
-                            {aiModels[selectedModel]?.name}
-                          </span>
-                        </div>
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => copyToClipboard(content.text, content.id)}
-                            className="p-2 text-gray-500 hover:text-blue-600 transition-colors"
-                            title="Copy to clipboard"
-                          >
-                            {copiedIndex === content.id ? (
-                              <Check className="w-4 h-4 text-green-600" />
-                            ) : (
-                              <Copy className="w-4 h-4" />
-                            )}
-                          </button>
-                        </div>
-                      </div>
-                      
-                      <div className="bg-gray-50 rounded-lg p-4 mb-3">
-                        <div className="text-gray-800 font-medium leading-relaxed whitespace-pre-wrap">
-                          {content.text}
-                        </div>
-                      </div>
-                      
+                <>
+                  {/* ✅ NEW: Clean Captions Section */}
+                  <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-6">
+                    <h3 className="text-lg font-bold text-orange-800 mb-2">🧹 Caption Cleaning</h3>
+                    <p className="text-sm text-orange-700 mb-4">
+                      Use this failsafe to clean any remaining formatting issues, CTAs, or emojis before generating images.
+                    </p>
+                    
+                    <div className="flex gap-3 flex-wrap">
                       <button
-                        onClick={() => copyToClipboard(content.text, content.id)}
-                        className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white py-2 px-4 rounded-lg hover:shadow-md transition-all duration-300 font-medium flex items-center justify-center gap-2"
+                        onClick={cleanAllCaptions}
+                        disabled={isCleaningCaptions}
+                        className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-300 disabled:opacity-50 flex items-center gap-2"
                       >
-                        {copiedIndex === content.id ? (
+                        {isCleaningCaptions ? (
                           <>
-                            <Check className="w-4 h-4" />
-                            Copied!
+                            <RefreshCw className="w-5 h-5 animate-spin" />
+                            Cleaning...
                           </>
                         ) : (
                           <>
-                            <Copy className="w-4 h-4" />
-                            Copy Text
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                            Clean All Captions ({generatedContent.length})
                           </>
                         )}
                       </button>
+                      
+                      <div className="text-xs text-orange-600 flex items-center">
+                        <strong>Removes:</strong> **, *, emojis, "Tag quelqu'un", "Commentez", "Partagez", etc.
+                      </div>
                     </div>
-                  ))}
+                  </div>
+
+                  {/* ✅ ENHANCED: Caption Display with Quality Indicators */}
+                  <div className="space-y-6">
+                    {generatedContent.map((content, index) => (
+                      <div key={content.id} className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow">
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-lg text-sm font-medium">
+                              Caption {content.id}
+                            </span>
+                            <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded-lg text-sm">
+                              {content.background} Background
+                            </span>
+                            <span className="bg-green-100 text-green-800 px-2 py-1 rounded-lg text-xs">
+                              {aiModels[selectedModel]?.name}
+                            </span>
+                            
+                            {/* ✅ NEW: Content Quality Indicators */}
+                            <div className="flex gap-1">
+                              {content.text.includes('**') && (
+                                <span className="bg-red-100 text-red-600 px-2 py-1 rounded text-xs">Markdown</span>
+                              )}
+                              {/🤗|🌟|💕|👇|🔥|✨|💰|📱|❤️|💯|😅|🤔|💙/.test(content.text) && (
+                                <span className="bg-red-100 text-red-600 px-2 py-1 rounded text-xs">Emojis</span>
+                              )}
+                              {/Tag\s+|Commentez\s+|Partagez\s+/i.test(content.text) && (
+                                <span className="bg-red-100 text-red-600 px-2 py-1 rounded text-xs">CTA</span>
+                              )}
+                            </div>
+                          </div>
+                          
+                          <div className="flex gap-2">
+                            {/* ✅ NEW: Individual Clean Button */}
+                            <button
+                              onClick={() => cleanSingleCaption(content.id)}
+                              className="p-2 text-orange-500 hover:text-orange-700 transition-colors"
+                              title="Clean this caption"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                            
+                            <button
+                              onClick={() => copyToClipboard(content.text, content.id)}
+                              className="p-2 text-gray-500 hover:text-blue-600 transition-colors"
+                              title="Copy to clipboard"
+                            >
+                              {copiedIndex === content.id ? (
+                                <Check className="w-4 h-4 text-green-600" />
+                              ) : (
+                                <Copy className="w-4 h-4" />
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                        
+                        <div className="bg-gray-50 rounded-lg p-4 mb-3">
+                          <div className="text-gray-800 font-medium leading-relaxed whitespace-pre-wrap">
+                            {content.text}
+                          </div>
+                        </div>
+                        
+                        <button
+                          onClick={() => copyToClipboard(content.text, content.id)}
+                          className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white py-2 px-4 rounded-lg hover:shadow-md transition-all duration-300 font-medium flex items-center justify-center gap-2"
+                        >
+                          {copiedIndex === content.id ? (
+                            <>
+                              <Check className="w-4 h-4" />
+                              Copied!
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="w-4 h-4" />
+                              Copy Text
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                   
-                  {/* Send to Bulk Generator Button */}
+                  {/* ✅ ENHANCED: Send to Bulk Generator with Pre-Clean Guidance */}
                   <div className="text-center pt-6 border-t border-gray-200">
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                      <h4 className="font-medium text-blue-800 mb-2">📸 Ready for Image Generation?</h4>
+                      <p className="text-sm text-blue-700">
+                        Make sure to clean your captions first if they contain any formatting issues.
+                        Then send them to the bulk generator to create images.
+                      </p>
+                    </div>
+                    
                     <button
                       onClick={sendToBulkGenerator}
                       className="bg-gradient-to-r from-green-500 to-blue-600 text-white py-4 px-8 rounded-xl font-bold text-lg hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-3 mx-auto"
@@ -916,7 +774,7 @@ Make each caption emotionally powerful using proven viral psychology and authent
                       Generate New Variations
                     </button>
                   </div>
-                </div>
+                </>
               )}
             </div>
           </div>
@@ -932,18 +790,18 @@ Make each caption emotionally powerful using proven viral psychology and authent
               <div className="text-sm text-gray-600">Create multi-line captions with research-backed viral formulas</div>
             </div>
             <div className="bg-white rounded-lg p-4">
-              <div className="text-2xl mb-2">⚡</div>
-              <div className="font-bold text-gray-800">2. Send to Bulk</div>
-              <div className="text-sm text-gray-600">Auto-transfer all captions to bulk generator with background suggestions</div>
+              <div className="text-2xl mb-2">🧹</div>
+              <div className="font-bold text-gray-800">2. Clean Captions</div>
+              <div className="text-sm text-gray-600">Remove formatting issues, CTAs, and emojis with one click</div>
             </div>
             <div className="bg-white rounded-lg p-4">
               <div className="text-2xl mb-2">📸</div>
               <div className="font-bold text-gray-800">3. Generate Images</div>
-              <div className="text-sm text-gray-600">Create Facebook-style images with optimal backgrounds and authentic styling</div>
+              <div className="text-sm text-gray-600">Create Facebook-style images with optimal backgrounds</div>
             </div>
           </div>
           <p className="text-sm text-gray-600 mt-4 text-center">
-            Complete viral content pipeline: AI captions → Bulk generation → GCS upload → Content Studio export → Facebook posts → Performance Program earnings! 💰
+            Complete viral content pipeline: AI captions → Clean captions → Bulk generation → GCS upload → Content Studio export → Facebook posts → Performance Program earnings! 💰
           </p>
         </div>
       </div>

@@ -24,7 +24,8 @@ const AICaptionGenerator = () => {
       demographics: '84.5% France, 68% ages 35-54, balanced gender',
       tone: 'Warm, authentic, relatable',
       peakTimes: 'Tuesday-Thursday, consistent all week',
-      topPerformers: 'Text-on-image posts (95%), emotional stories, family wisdom'
+      topPerformers: 'Text-on-image posts (95%), emotional stories, family wisdom',
+      engagementData: '289% increase with multi-line emotional content'
     },
     'english-motivation': {
       name: 'English Motivation',
@@ -34,9 +35,46 @@ const AICaptionGenerator = () => {
       demographics: 'Global English, career-focused',
       tone: 'Inspiring, direct, powerful',
       peakTimes: 'Monday mornings, Wednesday evenings',
-      topPerformers: 'Success stories, quotes, transformation posts'
+      topPerformers: 'Success stories, quotes, transformation posts',
+      engagementData: 'High engagement with personal stories and calls-to-action'
     }
   };
+
+  // AI Models selection
+  const aiModels = {
+    'anthropic/claude-3.5-sonnet': {
+      name: 'Claude 3.5 Sonnet',
+      description: 'Best for creative, nuanced content',
+      cost: '$0.003/1K tokens'
+    },
+    'anthropic/claude-3-haiku': {
+      name: 'Claude 3 Haiku',
+      description: 'Fast and efficient for simple content',
+      cost: '$0.0005/1K tokens'
+    },
+    'meta-llama/llama-3.1-70b-instruct': {
+      name: 'Llama 3.1 70B',
+      description: 'Excellent for multilingual content',
+      cost: '$0.0009/1K tokens'
+    },
+    'meta-llama/llama-3.1-8b-instruct': {
+      name: 'Llama 3.1 8B',
+      description: 'Budget-friendly, good quality',
+      cost: '$0.0002/1K tokens'
+    },
+    'openai/gpt-4o': {
+      name: 'GPT-4o',
+      description: 'Versatile, high-quality content',
+      cost: '$0.005/1K tokens'
+    },
+    'openai/gpt-4o-mini': {
+      name: 'GPT-4o Mini',
+      description: 'Cost-effective GPT-4 variant',
+      cost: '$0.0002/1K tokens'
+    }
+  };
+
+  const [selectedModel, setSelectedModel] = useState('anthropic/claude-3.5-sonnet');
 
   // Categories with viral formulas from your research
   const categories = {
@@ -72,58 +110,176 @@ const AICaptionGenerator = () => {
     }
   };
 
-  // Viral formulas based on your 289% engagement research
+  // Enhanced viral formulas based on your successful captions analysis
   const getViralPrompt = (pageId, categoryId, topic = '', quantity) => {
     const page = pageProfiles[pageId];
     const category = categories[categoryId];
     
     let categoryPrompt = '';
+    let exampleFormats = '';
+    
     if (categoryId === 'mixed-viral') {
-      categoryPrompt = `Generate a MIX of all content types:
+      categoryPrompt = `Generate a MIX of all content types for maximum variety:
 - Family & Relationships (parent struggles, marriage wisdom)
 - Life Wisdom (age revelations, personal growth)  
 - Motivation & Success (dreams, transformation)
 - Nostalgia & Memory (childhood memories, "remember when")
 - Humor & Social Commentary (technology struggles, modern parenting)
 
-Distribute evenly across all categories for maximum variety.`;
+Distribute evenly across all categories.`;
+
+      exampleFormats = `
+EXAMPLE FORMATS (vary the structure):
+
+Format 1 - Age Revelation:
+"À 40 ans, j'ai compris...
+
+Nos parents avaient raison sur TOUT.
+
+Mais on était trop fiers pour l'admettre.
+
+Tag un parent qui mérite des excuses 👇"
+
+Format 2 - Wisdom Statement:
+"20 ans de mariage m'ont appris:
+
+L'amour, ce n'est pas les papillons dans le ventre.
+
+C'est rester quand il n'y en a plus.
+
+Qui est d'accord? 💙"
+
+Format 3 - Nostalgic Question:
+"Qui se souvient:
+
+Des appels téléphoniques à heure fixe?
+Des cassettes qu'il fallait rembobiner?
+Du stress quand on ratait son émission?
+
+Commentez votre souvenir d'avant internet 👇"`;
     } else {
       categoryPrompt = `CATEGORY: ${category.name} - ${category.description}`;
+      
+      if (categoryId === 'family-relationships') {
+        exampleFormats = `
+FAMILY & RELATIONSHIPS EXAMPLES:
+"À 40 ans, j'ai compris...
+Nos parents avaient raison sur TOUT.
+Mais on était trop fiers pour l'admettre.
+Tag un parent qui mérite des excuses 👇"
+
+"Mes enfants: 'Maman, tu fais comment?'
+Moi: 'Attends, je googlelise...'
+Qui se reconnaît dans cette situation? 😅"`;
+      } else if (categoryId === 'life-wisdom') {
+        exampleFormats = `
+LIFE WISDOM EXAMPLES:
+"Personne ne m'avait dit qu'à 45 ans...
+Je serais encore en train de chercher ma voie.
+Et que c'est complètement normal.
+Partagez si vous vous reconnaissez ✨"
+
+"J'ai mis 30 ans à comprendre:
+L'argent ne fait pas le bonheur...
+Mais l'absence d'argent fait le malheur.
+Commentez 'VRAI' si vous êtes d'accord 💰"`;
+      } else if (categoryId === 'motivation-success') {
+        exampleFormats = `
+MOTIVATION & SUCCESS EXAMPLES:
+"J'ai échoué 100 fois avant mes 50 ans.
+Puis j'ai compris:
+Chaque échec me rapprochait du succès.
+Votre plus grand échec en commentaire? 👇"
+
+"À 35 ans, j'ai abandonné mon rêve.
+À 45 ans, je l'ai repris.
+Aujourd'hui, je vis de ma passion.
+Il n'est jamais trop tard pour recommencer ✨"`;
+      } else if (categoryId === 'nostalgia-memory') {
+        exampleFormats = `
+NOSTALGIA & MEMORY EXAMPLES:
+"Il y a 20 ans, je me disais:
+'À 40 ans, j'aurai tout compris.'
+Spoiler alert: Je comprends encore moins qu'avant.
+Et vous, vous avez l'impression de comprendre la vie? 🤔"`;
+      } else if (categoryId === 'humor-social') {
+        exampleFormats = `
+HUMOR & SOCIAL COMMENTARY EXAMPLES:
+"Avant: 'Va jouer dehors!'
+Maintenant: 'Mets ta crème solaire, ton casque, 
+tes genouillères et ton portable avec le GPS activé.'
+Les temps changent... 
+Partagez si vous êtes aussi devenus des parents anxieux 📱"`;
+      }
     }
     
-    const basePrompt = `You are creating SHORT TEXT CONTENT for Facebook image posts for ${page.name}.
+    const basePrompt = `You are creating VIRAL FACEBOOK CAPTIONS for ${page.name}, a ${page.niche} page.
 
-AUDIENCE PROFILE:
-- ${page.audience}
+PROVEN SUCCESS DATA:
+- Current engagement: ${page.engagementData}
+- Audience: ${page.audience}
 - Demographics: ${page.demographics}
 - Language: ${page.language}
 - Tone: ${page.tone}
 
-CONTENT REQUIREMENTS:
-Generate ${quantity} pieces of SHORT TEXT CONTENT for images (NOT captions).
-Each text should be 5-15 words maximum - perfect for image overlay.
+VIRAL CAPTION STRUCTURE (MANDATORY):
+Each caption MUST follow this 4-part structure:
+
+1. HOOK (1-2 lines): Age-specific opener that creates immediate curiosity
+   - "À [age] ans, j'ai compris..."
+   - "Personne ne m'avait dit qu'à [age] ans..."
+   - "[Number] ans de [experience] m'ont appris:"
+
+2. REVELATION/STORY (2-4 lines): The main insight or story
+   - Personal vulnerability or universal truth
+   - Emotional connection with the audience
+   - Relatable life experience
+
+3. VALIDATION/EXPANSION (1-2 lines): Reinforce the message
+   - Add depth or contradiction
+   - Make it more relatable
+   - Build emotional connection
+
+4. CALL-TO-ACTION (1 line): Drive engagement
+   - "Tag quelqu'un qui..."
+   - "Commentez [WORD] si..."
+   - "Partagez si vous vous reconnaissez"
+   - "Qui est d'accord? [emoji]"
 
 ${categoryPrompt}
 ${topic ? `SPECIFIC TOPIC: ${topic}` : ''}
 
-VIRAL TEXT FORMULAS:
-- Age-specific statements: "À 40 ans, j'ai compris..."
-- Universal truths: "L'amour, ce n'est pas..."
-- Questions: "Qui se souvient...?"
-- Confessions: "Personne ne m'avait dit..."
-- Wisdom: "La vie m'a appris..."
-- Contrarian: "Tout le monde pense... mais en réalité..."
+${exampleFormats}
+
+CONTENT REQUIREMENTS:
+- Generate ${quantity} complete viral captions
+- Each caption should be 4-8 lines long (NOT single lines)
+- Include strategic line breaks for readability
+- End with engaging call-to-action
+- Use relevant emojis sparingly (1-2 per caption)
+- Age references should target ${page.audience}
+
+PSYCHOLOGICAL TRIGGERS TO INCLUDE:
+- Nostalgia and time passage
+- Age-specific revelations
+- Family and relationship dynamics
+- Universal life struggles
+- Vulnerability and authenticity
+- Generational gaps and changes
 
 FORMAT YOUR RESPONSE EXACTLY AS:
-TEXT 1: [5-15 words]
+
+CAPTION 1:
+[Multi-line caption with hook, story, validation, CTA]
 BACKGROUND: [suggested background color]
 
-TEXT 2: [5-15 words]  
+CAPTION 2:
+[Multi-line caption with hook, story, validation, CTA]
 BACKGROUND: [suggested background color]
 
-Continue for all ${quantity} texts.
+Continue for all ${quantity} captions.
 
-Make each text emotionally powerful, relatable to ${page.audience}, and perfect for sharing.`;
+Make each caption emotionally powerful, highly shareable, and optimized for maximum comments/reactions.`;
 
     return basePrompt;
   };
@@ -149,7 +305,7 @@ Make each text emotionally powerful, relatable to ${page.audience}, and perfect 
           'X-Title': 'FB Caption Generator'
         },
         body: JSON.stringify({
-          model: 'anthropic/claude-3.5-sonnet',
+          model: selectedModel,
           messages: [
             {
               role: 'user',
@@ -157,7 +313,7 @@ Make each text emotionally powerful, relatable to ${page.audience}, and perfect 
             }
           ],
           temperature: 0.8,
-          max_tokens: 2000
+          max_tokens: 3000
         })
       });
 
@@ -168,34 +324,43 @@ Make each text emotionally powerful, relatable to ${page.audience}, and perfect 
       const data = await response.json();
       const content = data.choices[0].message.content;
       
-      // Parse the structured response
-      const textMatches = content.match(/TEXT \d+:\s*([^\n]+)\s*BACKGROUND:\s*([^\n]+)/gi);
+      // Parse the structured response for full captions
+      const captionMatches = content.match(/CAPTION \d+:\s*([\s\S]*?)(?=BACKGROUND:|$)/gi);
+      const backgroundMatches = content.match(/BACKGROUND:\s*([^\n]+)/gi);
       
-      if (textMatches) {
-        const parsedContent = textMatches.map((match, index) => {
-          const lines = match.split('\n');
-          const textLine = lines.find(line => line.includes('TEXT'));
-          const backgroundLine = lines.find(line => line.includes('BACKGROUND'));
-          
-          const text = textLine ? textLine.replace(/TEXT \d+:\s*/, '').trim() : `Generated text ${index + 1}`;
-          const background = backgroundLine ? backgroundLine.replace(/BACKGROUND:\s*/, '').trim() : 'Purple-Pink';
+      if (captionMatches && backgroundMatches) {
+        const parsedContent = captionMatches.map((match, index) => {
+          const captionText = match.replace(/CAPTION \d+:\s*/, '').trim();
+          const backgroundText = backgroundMatches[index] ? 
+            backgroundMatches[index].replace(/BACKGROUND:\s*/, '').trim() : 'Purple-Pink';
           
           return {
             id: index + 1,
-            text: text.replace(/["""]/g, '').trim(),
-            background: background
+            text: captionText.replace(/["""]/g, '').trim(),
+            background: backgroundText
           };
         });
         
         setGeneratedContent(parsedContent);
       } else {
-        // Fallback parsing if format is different
-        const lines = content.split('\n').filter(line => line.trim().length > 5);
-        const fallbackContent = lines.slice(0, quantity).map((line, index) => ({
-          id: index + 1,
-          text: line.trim().replace(/^\d+\.\s*/, '').replace(/["""]/g, ''),
-          background: categories[selectedCategory]?.backgrounds[index % categories[selectedCategory]?.backgrounds.length] || 'Purple-Pink'
-        }));
+        // Fallback parsing for different formats
+        const sections = content.split(/CAPTION \d+:|TEXT \d+:/i).filter(section => section.trim().length > 10);
+        const fallbackContent = sections.slice(0, quantity).map((section, index) => {
+          const lines = section.split('\n').filter(line => line.trim().length > 0);
+          const textLines = lines.filter(line => !line.includes('BACKGROUND:'));
+          const backgroundLine = lines.find(line => line.includes('BACKGROUND:'));
+          
+          const text = textLines.join('\n').trim().replace(/["""]/g, '');
+          const background = backgroundLine ? 
+            backgroundLine.replace(/BACKGROUND:\s*/i, '').trim() : 
+            categories[selectedCategory]?.backgrounds[index % categories[selectedCategory]?.backgrounds.length] || 'Purple-Pink';
+          
+          return {
+            id: index + 1,
+            text: text,
+            background: background
+          };
+        });
         
         setGeneratedContent(fallbackContent);
       }
@@ -244,10 +409,10 @@ Make each text emotionally powerful, relatable to ${page.audience}, and perfect 
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-800 mb-2">
-            🤖 AI Image Text Generator
+            🤖 AI Viral Caption Generator
           </h1>
           <p className="text-lg text-gray-600">
-            Research-backed short texts for maximum Performance Program earnings
+            Multi-line viral captions for maximum Performance Program earnings
           </p>
         </div>
 
@@ -322,6 +487,30 @@ Make each text emotionally powerful, relatable to ${page.audience}, and perfect 
                 >
                   <Settings className="w-5 h-5" />
                 </button>
+              </div>
+
+              {/* AI Model Selection */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <Brain className="w-4 h-4 inline mr-1" />
+                  AI Model
+                </label>
+                <select
+                  value={selectedModel}
+                  onChange={(e) => setSelectedModel(e.target.value)}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  {Object.entries(aiModels).map(([id, model]) => (
+                    <option key={id} value={id}>
+                      {model.name} - {model.cost}
+                    </option>
+                  ))}
+                </select>
+                
+                {/* Model Info */}
+                <div className="mt-2 p-2 bg-gray-50 rounded text-xs text-gray-600">
+                  {aiModels[selectedModel]?.description}
+                </div>
               </div>
 
               {/* Page Selection */}
@@ -430,7 +619,7 @@ Make each text emotionally powerful, relatable to ${page.audience}, and perfect 
                 ) : (
                   <>
                     <Wand2 className="w-5 h-5" />
-                    Generate Image Texts
+                    Generate Viral Captions
                   </>
                 )}
               </button>
@@ -448,14 +637,14 @@ Make each text emotionally powerful, relatable to ${page.audience}, and perfect 
             <div className="bg-white rounded-2xl p-6 shadow-lg">
               <h2 className="text-xl font-bold text-gray-800 mb-6">
                 <Zap className="w-5 h-5 inline mr-2" />
-                Generated Image Texts
+                Generated Viral Captions
               </h2>
 
               {generatedContent.length === 0 ? (
                 <div className="text-center py-12 text-gray-500">
                   <Wand2 className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                  <p className="text-lg">Configure your settings and generate image texts</p>
-                  <p className="text-sm">Based on 289% engagement research data</p>
+                  <p className="text-lg">Configure your settings and generate viral captions</p>
+                  <p className="text-sm">Multi-line captions based on 289% engagement research</p>
                 </div>
               ) : (
                 <div className="space-y-6">
@@ -464,10 +653,13 @@ Make each text emotionally powerful, relatable to ${page.audience}, and perfect 
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex items-center gap-2">
                           <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-lg text-sm font-medium">
-                            Text {content.id}
+                            Caption {content.id}
                           </span>
                           <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded-lg text-sm">
                             {content.background} Background
+                          </span>
+                          <span className="bg-green-100 text-green-800 px-2 py-1 rounded-lg text-xs">
+                            {aiModels[selectedModel]?.name}
                           </span>
                         </div>
                         <div className="flex gap-2">
@@ -486,8 +678,8 @@ Make each text emotionally powerful, relatable to ${page.audience}, and perfect 
                       </div>
                       
                       <div className="bg-gray-50 rounded-lg p-4 mb-3">
-                        <div className="text-gray-800 font-bold text-lg leading-relaxed text-center">
-                          "{content.text}"
+                        <div className="text-gray-800 font-medium leading-relaxed whitespace-pre-wrap">
+                          {content.text}
                         </div>
                       </div>
                       
@@ -546,22 +738,22 @@ Make each text emotionally powerful, relatable to ${page.audience}, and perfect 
           <div className="grid md:grid-cols-3 gap-4 text-center">
             <div className="bg-white rounded-lg p-4">
               <div className="text-2xl mb-2">🤖</div>
-              <div className="font-bold text-gray-800">1. Generate AI Texts</div>
-              <div className="text-sm text-gray-600">Create viral content with research-backed prompts</div>
+              <div className="font-bold text-gray-800">1. Generate Viral Captions</div>
+              <div className="text-sm text-gray-600">Create multi-line captions with research-backed viral formulas</div>
             </div>
             <div className="bg-white rounded-lg p-4">
               <div className="text-2xl mb-2">⚡</div>
               <div className="font-bold text-gray-800">2. Send to Bulk</div>
-              <div className="text-sm text-gray-600">Auto-transfer all texts to bulk generator</div>
+              <div className="text-sm text-gray-600">Auto-transfer all captions to bulk generator with background suggestions</div>
             </div>
             <div className="bg-white rounded-lg p-4">
               <div className="text-2xl mb-2">📸</div>
               <div className="font-bold text-gray-800">3. Generate Images</div>
-              <div className="text-sm text-gray-600">Create all images with optimal backgrounds</div>
+              <div className="text-sm text-gray-600">Create Facebook-style images with optimal backgrounds and authentic styling</div>
             </div>
           </div>
           <p className="text-sm text-gray-600 mt-4 text-center">
-            Streamlined workflow: AI texts → Bulk generation → GCS upload → Content Studio export → Facebook posts → Performance Program earnings! 💰
+            Complete viral content pipeline: AI captions → Bulk generation → GCS upload → Content Studio export → Facebook posts → Performance Program earnings! 💰
           </p>
         </div>
       </div>

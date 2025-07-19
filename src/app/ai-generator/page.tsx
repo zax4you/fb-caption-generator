@@ -1,12 +1,10 @@
-// COMPLETE AI Generator with Clean Captions Feature + French Typography Fix
-// Replace your entire /src/app/ai-generator/page.tsx file with this
-
 'use client'
 
-import React, { useState } from 'react';
-import { Wand2, Copy, RefreshCw, Settings, Target, Globe, Brain, Zap, Check, Lightbulb } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Wand2, Copy, RefreshCw, Settings, Target, Globe, Brain, Zap, Check, Lightbulb, BarChart3, TrendingUp, AlertTriangle, Shuffle, Activity } from 'lucide-react';
 
-const AICaptionGenerator = () => {
+const EnhancedAICaptionGenerator = () => {
+  // Existing state
   const [selectedPage, setSelectedPage] = useState('momix-famille');
   const [selectedCategory, setSelectedCategory] = useState('family-relationships');
   const [customTopic, setCustomTopic] = useState('');
@@ -16,7 +14,115 @@ const AICaptionGenerator = () => {
   const [apiKey, setApiKey] = useState('');
   const [showSettings, setShowSettings] = useState(false);
   const [copiedIndex, setCopiedIndex] = useState(null);
-  const [isCleaningCaptions, setIsCleaningCaptions] = useState(false); // ✅ NEW: Clean state
+  const [isCleaningCaptions, setIsCleaningCaptions] = useState(false);
+  const [selectedModel, setSelectedModel] = useState('anthropic/claude-3.5-sonnet');
+
+  // ✅ NEW: Smart Features State
+  const [usePromptRotation, setUsePromptRotation] = useState(true);
+  const [selectedFormulas, setSelectedFormulas] = useState([]);
+  const [similarityThreshold, setSimilarityThreshold] = useState(70);
+  const [showPerformanceStats, setShowPerformanceStats] = useState(false);
+  const [modelStats, setModelStats] = useState({});
+  const [contentHistory, setContentHistory] = useState([]);
+  const [duplicateWarnings, setDuplicateWarnings] = useState([]);
+
+  // Load data from localStorage on mount
+  useEffect(() => {
+    const savedApiKey = localStorage.getItem('openrouter_api_key');
+    if (savedApiKey) setApiKey(savedApiKey);
+
+    const savedStats = localStorage.getItem('ai_model_stats');
+    if (savedStats) setModelStats(JSON.parse(savedStats));
+
+    const savedHistory = localStorage.getItem('content_history');
+    if (savedHistory) setContentHistory(JSON.parse(savedHistory));
+  }, []);
+
+  // ✅ FEATURE 1: VIRAL FORMULAS FOR PROMPT ROTATION
+  const viralFormulas = {
+    'age_progression': {
+      name: 'Progression d\'âge',
+      structure: 'À 20 ans / À 30 ans / À 40 ans / À 50 ans',
+      prompt: `FORMULE PROGRESSION D'ÂGE:
+À 20 ans: [croyance jeune naïve]
+
+À 30 ans: [première réalisation]
+
+À 40 ans: [vérité mature plus dure]
+
+À 50 ans: [sagesse finale acceptée]
+
+Utilise cette structure exacte avec des transitions d'âge réalistes et des vérités qui évoluent.`
+    },
+    'before_after': {
+      name: 'Avant/Maintenant',
+      structure: 'Avant d\'être parent / Maintenant',
+      prompt: `FORMULE AVANT/MAINTENANT:
+Avant d'être parent: [naïveté/idéalisme]
+
+Maintenant: [réalité crue mais touchante]
+
+[Conclusion humble et touchante]
+
+Crée un contraste émotionnel fort entre l'idéal et la réalité parentale.`
+    },
+    'confession': {
+      name: 'Confession personnelle',
+      structure: 'J\'avoue que / La vérité c\'est que',
+      prompt: `FORMULE CONFESSION:
+J'avoue que [vulnérabilité personnelle]
+
+La vérité c'est que [réalité cachée]
+
+[Explication pourquoi c'est dur à admettre]
+
+[Validation que c'est normal]
+
+Utilise la vulnérabilité pour créer une connexion émotionnelle forte.`
+    },
+    'revelation': {
+      name: 'Révélation d\'âge',
+      structure: 'À [âge] ans, j\'ai enfin compris',
+      prompt: `FORMULE RÉVÉLATION:
+À [âge spécifique] ans, j'ai enfin compris
+
+[Vérité sur la vie/famille/relations]
+
+[Pourquoi ça a pris si longtemps à comprendre]
+
+[Impact de cette compréhension]
+
+L'âge doit être crédible et la révélation universelle mais spécifique.`
+    },
+    'nostalgia_tech': {
+      name: 'Nostalgie technologique',
+      structure: 'Se souvenir quand',
+      prompt: `FORMULE NOSTALGIE TECH:
+Se souvenir quand:
+
+[Contrainte technologique d'avant]
+[Autre contrainte de l'époque]
+[Troisième exemple nostalgique]
+
+[Réflexion sur le changement/évolution]
+
+Utilise des références spécifiquement françaises des années 90-2000.`
+    },
+    'perspective_multiple': {
+      name: 'Perspectives multiples',
+      structure: 'Les enfants / Moi le matin / Moi le soir',
+      prompt: `FORMULE PERSPECTIVES MULTIPLES:
+Les enfants: [demande/attente]
+
+Moi le matin: [bonne volonté/énergie]
+
+Moi le soir: [réalité fatiguée mais drôle]
+
+[Conclusion sur la réalité parentale]
+
+Montre l'évolution de l'énergie parentale sur une journée.`
+    }
+  };
 
   // Page profiles
   const pageProfiles = {
@@ -78,176 +184,138 @@ const AICaptionGenerator = () => {
     }
   };
 
-  const [selectedModel, setSelectedModel] = useState('anthropic/claude-3.5-sonnet');
-
   // Categories
   const categories = {
     'family-relationships': {
       name: '👨‍👩‍👧‍👦 Family & Relationships',
       description: 'Parent struggles, marriage wisdom, family bonds',
-      backgrounds: ['Purple-Pink', 'Pink-Blue', 'Cyan-Purple']
+      backgrounds: ['Purple-Pink', 'Pink-Blue', 'Cyan-Purple'],
+      recommendedFormulas: ['age_progression', 'before_after', 'confession']
     },
     'life-wisdom': {
       name: '🧠 Life Wisdom',
       description: 'Age revelations, life truths, personal growth',
-      backgrounds: ['Dark', 'Solid Purple', 'Cyan-Purple']
+      backgrounds: ['Dark', 'Solid Purple', 'Cyan-Purple'],
+      recommendedFormulas: ['revelation', 'age_progression', 'confession']
     },
     'motivation-success': {
       name: '⚡ Motivation & Success',
       description: 'Dreams, second chances, transformation stories',
-      backgrounds: ['Yellow-Pink', 'Cyan-Purple', 'Pink-Red']
+      backgrounds: ['Yellow-Pink', 'Cyan-Purple', 'Pink-Red'],
+      recommendedFormulas: ['before_after', 'revelation', 'confession']
     },
     'nostalgia-memory': {
       name: '💭 Nostalgia & Memory',
       description: 'Childhood memories, time passage, "remember when"',
-      backgrounds: ['Purple-Pink', 'Cyan-Purple', 'Pink-Blue']
+      backgrounds: ['Purple-Pink', 'Cyan-Purple', 'Pink-Blue'],
+      recommendedFormulas: ['nostalgia_tech', 'age_progression', 'perspective_multiple']
     },
     'humor-social': {
       name: '😂 Humor & Social Commentary',
       description: 'Technology struggles, modern parenting, generational gaps',
-      backgrounds: ['Pink-Red', 'Pink-Blue', 'Yellow-Pink']
+      backgrounds: ['Pink-Red', 'Pink-Blue', 'Yellow-Pink'],
+      recommendedFormulas: ['perspective_multiple', 'before_after', 'nostalgia_tech']
     },
     'mixed-viral': {
       name: '🔥 Mixed Viral Content',
       description: 'Combination of all categories for maximum variety',
-      backgrounds: ['All backgrounds randomly assigned']
+      backgrounds: ['All backgrounds randomly assigned'],
+      recommendedFormulas: ['age_progression', 'before_after', 'confession', 'revelation']
     }
   };
 
-  // ✅ ENHANCED: Super aggressive text cleaning WITH FRENCH TYPOGRAPHY FIX
-  const cleanText = (text) => {
-    return text
-      .replace(/^\*\*\s*/, '')                    // Remove ** at beginning
-      .replace(/\s*\*\*$/, '')                    // Remove ** at end  
-      .replace(/\*\*/g, '')                       // Remove all **
-      .replace(/\*/g, '')                         // Remove all *
-      .replace(/_{2,}/g, '')                      // Remove __
-      .replace(/`+/g, '')                         // Remove backticks
-      .replace(/#{1,6}\s*/g, '')                  // Remove headers
-      .replace(/^\s*[-*+]\s*/gm, '')              // Remove bullets
-      .replace(/^\s*\d+\.\s*/gm, '')              // Remove numbers
-      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')    // Convert links to text
-      
-      // ✅ FIX FRENCH TYPOGRAPHY - CORRECTION PRINCIPALE POUR LES APOSTROPHES !
-      .replace(/'/g, "'")                         // Replace straight apostrophes with French apostrophes
-      .replace(/'/g, "'")                         // Replace any other straight apostrophes
-      .replace(/"/g, '"')                         // Fix opening quotes (optional)
-      .replace(/"/g, '"')                         // Fix closing quotes (optional)
-      
-      // ✅ REMOVE ALL CTAs (comprehensive list)
-      .replace(/Tag\s+[^.!?\n]*[.!?\n]/gi, '')
-      .replace(/Commentez\s+[^.!?\n]*[.!?\n]/gi, '')
-      .replace(/Partagez\s+[^.!?\n]*[.!?\n]/gi, '')
-      .replace(/Qui\s+est\s+d['']accord[^.!?\n]*[.!?\n]/gi, '')  // Note: handles both ' and '
-      .replace(/Likez\s+[^.!?\n]*[.!?\n]/gi, '')
-      .replace(/Suivez\s+[^.!?\n]*[.!?\n]/gi, '')
-      .replace(/Abonnez-vous[^.!?\n]*[.!?\n]/gi, '')
-      .replace(/Dites-moi\s+[^.!?\n]*[.!?\n]/gi, '')
-      .replace(/Réagissez\s+[^.!?\n]*[.!?\n]/gi, '')
-      
-      // ✅ REMOVE ALL EMOJIS (comprehensive list)
-      .replace(/🤗|🌟|💕|👇|🔥|✨|💰|📱|❤️|💯|😅|🤔|💙|👨‍👩‍👧‍👦|🧠|⚡|💭|😂|🎯|🚀|💪|🙌|👏|💜|🖤|💚|💛|🧡|❤️‍🔥|💖|💝|💗|💓|💘|💋|👀|🤯|😍|🥰|😘|😊|😄|😃|😂|🤣|😆|😁|🙂|🙃|😉|😇|🥺|😢|😭|😤|😠|😡|🤬|🤢|🤮|🤧|😷|🤒|🤕|🤠|🤡|🤥|🤓|😎|🧐|🤨|😐|😑|😶|😏|😒|🙄|😬|🤐|🤫|🤭|😯|😦|😧|😮|😲|🥱|😴|🤤|😪|😵|🤐|🥴|🤢|🤮|🤧|😷|🤒|🤕|🤑|🤠|😈|👿|👹|👺|🤡|💩|👻|💀|☠️|👽|👾|🤖|🎃|😺|😸|😹|😻|😼|😽|🙀|😿|😾/g, '')
-      
-      // ✅ CLEAN FORMATTING
-      .replace(/["""'']/g, '')                    // Remove smart quotes (except the ones we want)
-      .replace(/\s{3,}/g, '\n\n')                 // Convert multiple spaces to double line break
-      .replace(/\n{3,}/g, '\n\n')                 // Limit line breaks to maximum 2
-      .replace(/^\s+|\s+$/g, '')                  // Trim whitespace at start/end
-      .trim();
+  // ✅ FEATURE 2: SIMILARITY DETECTION
+  const calculateSimilarity = (text1, text2) => {
+    const normalize = (str) => str.toLowerCase().replace(/[^\w\s]/g, '').trim();
+    const words1 = normalize(text1).split(/\s+/);
+    const words2 = normalize(text2).split(/\s+/);
+    
+    const set1 = new Set(words1);
+    const set2 = new Set(words2);
+    
+    const intersection = new Set([...set1].filter(x => set2.has(x)));
+    const union = new Set([...set1, ...set2]);
+    
+    return (intersection.size / union.size) * 100;
   };
 
-  // ✅ NEW: Clean all captions function
-  const cleanAllCaptions = () => {
-    if (generatedContent.length === 0) {
-      alert('No captions to clean. Generate some content first!');
-      return;
-    }
-
-    setIsCleaningCaptions(true);
+  const checkForDuplicates = (newContent) => {
+    const warnings = [];
+    const recentHistory = contentHistory.slice(-50); // Check last 50 posts
     
-    // Clean all captions
-    const cleanedContent = generatedContent.map(content => ({
-      ...content,
-      text: cleanText(content.text)
-    }));
-    
-    setGeneratedContent(cleanedContent);
-    
-    // Show success message
-    setTimeout(() => {
-      setIsCleaningCaptions(false);
-      alert(`✅ Cleaned ${cleanedContent.length} captions!\n\nRemoved: markdown, emojis, CTAs, and formatting issues.\nFixed: French apostrophes and typography.`);
-    }, 1000);
-  };
-
-  // ✅ NEW: Individual caption cleaning
-  const cleanSingleCaption = (captionId) => {
-    const updatedContent = generatedContent.map(content => {
-      if (content.id === captionId) {
-        return {
-          ...content,
-          text: cleanText(content.text)
-        };
-      }
-      return content;
+    newContent.forEach((content, index) => {
+      recentHistory.forEach((historical, histIndex) => {
+        const similarity = calculateSimilarity(content.text, historical.text);
+        if (similarity > similarityThreshold) {
+          warnings.push({
+            index,
+            similarity: Math.round(similarity),
+            originalText: historical.text.substring(0, 100) + '...',
+            generatedDate: historical.date
+          });
+        }
+      });
     });
     
-    setGeneratedContent(updatedContent);
+    return warnings;
   };
 
-  // ✅ ENHANCED: Viral prompt with French typography instructions
-  const getViralPrompt = (pageId, categoryId, topic = '', quantity) => {
-    const page = pageProfiles[pageId];
+  // ✅ FEATURE 3: MODEL PERFORMANCE TRACKING
+  const trackModelUsage = (model, success, engagementScore = 0) => {
+    const updatedStats = { ...modelStats };
     
-    const basePrompt = `Tu crées des POSTS VIRAUX FACEBOOK pour ${page.name}, une page ${page.niche}.
+    if (!updatedStats[model]) {
+      updatedStats[model] = {
+        totalUses: 0,
+        successfulGenerations: 0,
+        totalEngagementScore: 0,
+        averageEngagement: 0,
+        lastUsed: new Date().toISOString()
+      };
+    }
+    
+    updatedStats[model].totalUses += 1;
+    if (success) {
+      updatedStats[model].successfulGenerations += 1;
+    }
+    updatedStats[model].totalEngagementScore += engagementScore;
+    updatedStats[model].averageEngagement = 
+      updatedStats[model].totalEngagementScore / updatedStats[model].totalUses;
+    updatedStats[model].lastUsed = new Date().toISOString();
+    
+    setModelStats(updatedStats);
+    localStorage.setItem('ai_model_stats', JSON.stringify(updatedStats));
+  };
+
+  // ✅ ENHANCED PROMPT GENERATION WITH ROTATION
+  const getEnhancedViralPrompt = (pageId, categoryId, topic = '', quantity) => {
+    const page = pageProfiles[pageId];
+    const category = categories[categoryId];
+    
+    // Select formulas for rotation
+    let formulas = [];
+    if (usePromptRotation && selectedFormulas.length > 0) {
+      formulas = selectedFormulas;
+    } else if (category.recommendedFormulas) {
+      formulas = category.recommendedFormulas.slice(0, Math.min(3, category.recommendedFormulas.length));
+    } else {
+      formulas = ['age_progression', 'confession', 'revelation'];
+    }
+    
+    // Build formula instructions
+    const formulaInstructions = formulas.map(formulaId => {
+      const formula = viralFormulas[formulaId];
+      return formula ? formula.prompt : '';
+    }).join('\n\n');
+    
+    const basePrompt = `Tu es un expert en contenu viral français pour ${page.name}.
 
 DONNÉES DE SUCCÈS PROUVÉES:
-- Engagement actuel: ${page.engagementData}
+- Engagement: ${page.engagementData}
 - Audience: ${page.audience}
 - Ton: ${page.tone}
 
-FORMULES VIRALES OBLIGATOIRES - Utilise EXACTEMENT ces structures:
-
-FORMULE 1 - Progression d'âge:
-À 20 ans: [croyance jeune]
-
-À 30 ans: [réalisation]
-
-À 40 ans: [vérité mature]
-
-À 50 ans: [sagesse finale]
-
-FORMULE 2 - Avant/Maintenant:
-Avant d'être parent: [naïveté]
-
-Maintenant: [réalité crue]
-
-[Conclusion humble]
-
-FORMULE 3 - Perspectives multiples:
-Les enfants: [demande]
-
-Moi le matin: [bonne volonté]
-
-Moi le soir: [réalité fatiguée]
-
-FORMULE 4 - Révélation d'âge:
-À [âge] ans, j'ai enfin compris
-
-[Vérité cachée sur un aspect de la vie]
-
-[Explication de pourquoi c'est important]
-
-[Conclusion naturelle]
-
-FORMULE 5 - Nostalgie technologique:
-Se souvenir quand:
-
-[Contrainte technologique d'avant]
-
-[Autre contrainte]
-
-[Réflexion sur le changement]
+${formulaInstructions}
 
 RÈGLES STRICTES POUR LA TYPOGRAPHIE FRANÇAISE:
 - UTILISE TOUJOURS les apostrophes françaises ' au lieu de '
@@ -261,28 +329,47 @@ RÈGLES STRICTES POUR LA TYPOGRAPHIE FRANÇAISE:
 - Vulnérabilité et imperfections, pas de perfection
 - 4-6 lignes maximum par caption
 
-EXEMPLES AVEC BONNE TYPOGRAPHIE:
-"À 40 ans, j'ai compris que nos parents avaient raison"
-"L'amour, ce n'est pas ce qu'on croit"
-"J'étais persuadée d'avoir tout compris"
+DISTRIBUTION DES FORMULES:
+- Utilise les ${formulas.length} formules de manière équilibrée
+- Varie l'ordre et la structure
+- ${quantity} posts au total
 
-GÉNÈRE ${quantity} posts en utilisant les formules ci-dessus avec la TYPOGRAPHIE FRANÇAISE CORRECTE.
+${topic ? `SUJET SPÉCIFIQUE: ${topic}` : ''}
 
-FORMAT DE RÉPONSE:
-
-CAPTION 1:
-[Texte avec lignes vides entre les pensées ET apostrophes françaises correctes]
-BACKGROUND: [couleur suggérée]
-
-CAPTION 2:
-[Texte avec lignes vides entre les pensées ET apostrophes françaises correctes]
-BACKGROUND: [couleur suggérée]
-
-Continue pour tous les ${quantity} posts.`;
+GÉNÈRE ${quantity} posts viraux en utilisant les formules sélectionnées avec la TYPOGRAPHIE FRANÇAISE CORRECTE.`;
 
     return basePrompt;
   };
 
+  // Clean captions function
+  const cleanText = (text) => {
+    return text
+      .replace(/^\*\*\s*/, '')
+      .replace(/\s*\*\*$/, '')
+      .replace(/\*\*/g, '')
+      .replace(/\*/g, '')
+      .replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F700}-\u{1F77F}]|[\u{1F780}-\u{1F7FF}]|[\u{1F800}-\u{1F8FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '')
+      .replace(/tag\s+(quelqu'un|qqn|une\s+personne)/gi, '')
+      .replace(/commentez\s+["'""]?\w+["'""]?\s+si/gi, '')
+      .replace(/partagez\s+si/gi, '')
+      .replace(/qui\s+est\s+d'accord\s*\?/gi, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  };
+
+  const cleanAllCaptions = () => {
+    setIsCleaningCaptions(true);
+    setTimeout(() => {
+      const cleanedContent = generatedContent.map(content => ({
+        ...content,
+        text: cleanText(content.text)
+      }));
+      setGeneratedContent(cleanedContent);
+      setIsCleaningCaptions(false);
+    }, 500);
+  };
+
+  // Generate captions with smart features
   const generateCaptions = async () => {
     if (!apiKey) {
       alert('Please enter your OpenRouter API key in settings');
@@ -291,9 +378,10 @@ Continue pour tous les ${quantity} posts.`;
 
     setIsGenerating(true);
     setGeneratedContent([]);
+    setDuplicateWarnings([]);
 
     try {
-      const prompt = getViralPrompt(selectedPage, selectedCategory, customTopic, quantity);
+      const prompt = getEnhancedViralPrompt(selectedPage, selectedCategory, customTopic, quantity);
       
       const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
@@ -301,16 +389,11 @@ Continue pour tous les ${quantity} posts.`;
           'Authorization': `Bearer ${apiKey}`,
           'Content-Type': 'application/json',
           'HTTP-Referer': window.location.origin,
-          'X-Title': 'FB Caption Generator'
+          'X-Title': 'Enhanced FB Caption Generator'
         },
         body: JSON.stringify({
           model: selectedModel,
-          messages: [
-            {
-              role: 'user',
-              content: prompt
-            }
-          ],
+          messages: [{ role: 'user', content: prompt }],
           temperature: 0.8,
           max_tokens: Math.max(6000, quantity * 400)
         })
@@ -323,49 +406,66 @@ Continue pour tous les ${quantity} posts.`;
       const data = await response.json();
       const content = data.choices[0].message.content;
       
-      // ✅ ENHANCED: Better parsing
-      const captionMatches = content.match(/CAPTION \d+:\s*([\s\S]*?)(?=BACKGROUND:|$)/gi);
-      const backgroundMatches = content.match(/BACKGROUND:\s*([^\n]+)/gi);
+      // Parse generated content
+      const lines = content.split('\n').filter(line => line.trim().length > 0);
+      const results = [];
+      let currentCaption = '';
+      let captionCount = 0;
       
-      if (captionMatches && backgroundMatches) {
-        const parsedContent = captionMatches.map((match, index) => {
-          const captionText = match.replace(/CAPTION \d+:\s*/, '').trim();
-          const backgroundText = backgroundMatches[index] ? 
-            backgroundMatches[index].replace(/BACKGROUND:\s*/, '').trim() : 'Purple-Pink';
+      for (const line of lines) {
+        if (line.trim().length > 0) {
+          currentCaption += line + '\n';
+        } else if (currentCaption.trim().length > 0) {
+          captionCount++;
+          const categoryBgs = categories[selectedCategory]?.backgrounds || ['Dark'];
+          const randomBg = categoryBgs[Math.floor(Math.random() * categoryBgs.length)];
           
-          return {
-            id: index + 1,
-            text: cleanText(captionText),
-            background: backgroundText
-          };
-        });
-        
-        setGeneratedContent(parsedContent);
-      } else {
-        // Fallback parsing
-        const sections = content.split(/CAPTION \d+:|TEXT \d+:/i).filter(section => section.trim().length > 10);
-        const fallbackContent = sections.slice(0, quantity).map((section, index) => {
-          const lines = section.split('\n').filter(line => line.trim().length > 0);
-          const textLines = lines.filter(line => !line.includes('BACKGROUND:'));
-          const backgroundLine = lines.find(line => line.includes('BACKGROUND:'));
+          results.push({
+            id: captionCount,
+            text: currentCaption.trim(),
+            background: randomBg
+          });
+          currentCaption = '';
           
-          const text = cleanText(textLines.join('\n'));
-          const background = backgroundLine ? 
-            backgroundLine.replace(/BACKGROUND:\s*/i, '').trim() : 
-            categories[selectedCategory]?.backgrounds[index % categories[selectedCategory]?.backgrounds.length] || 'Purple-Pink';
-          
-          return {
-            id: index + 1,
-            text: text,
-            background: background
-          };
-        });
-        
-        setGeneratedContent(fallbackContent);
+          if (results.length >= quantity) break;
+        }
       }
+      
+      // Add any remaining content
+      if (currentCaption.trim().length > 0 && results.length < quantity) {
+        captionCount++;
+        const categoryBgs = categories[selectedCategory]?.backgrounds || ['Dark'];
+        const randomBg = categoryBgs[Math.floor(Math.random() * categoryBgs.length)];
+        
+        results.push({
+          id: captionCount,
+          text: currentCaption.trim(),
+          background: randomBg
+        });
+      }
+
+      // Check for duplicates
+      const warnings = checkForDuplicates(results);
+      setDuplicateWarnings(warnings);
+      
+      // Update content history
+      const newHistory = [...contentHistory, ...results.map(r => ({
+        ...r,
+        date: new Date().toISOString(),
+        model: selectedModel
+      }))];
+      setContentHistory(newHistory.slice(-100)); // Keep last 100
+      localStorage.setItem('content_history', JSON.stringify(newHistory.slice(-100)));
+      
+      setGeneratedContent(results);
+      
+      // Track model performance
+      trackModelUsage(selectedModel, true, results.length * 10); // Base score
+      
     } catch (error) {
       console.error('Generation error:', error);
       alert('Error generating content. Check your API key and try again.');
+      trackModelUsage(selectedModel, false);
     }
 
     setIsGenerating(false);
@@ -404,78 +504,210 @@ Continue pour tous les ${quantity} posts.`;
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-800 mb-2">
-            🤖 AI Viral Caption Generator
+            🧠 Enhanced AI Caption Generator
           </h1>
           <p className="text-lg text-gray-600">
-            Multi-line viral captions with perfect French typography
+            Smart viral captions with rotation, tracking & duplicate detection
           </p>
         </div>
 
-        {/* API Key Required Notice */}
+        {/* Smart Features Status Bar */}
+        <div className="bg-white rounded-xl p-4 mb-6 shadow-lg">
+          <div className="flex flex-wrap gap-4 justify-center">
+            <div className={`px-3 py-1 rounded-full text-sm font-medium ${usePromptRotation ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}>
+              <Shuffle className="w-4 h-4 inline mr-1" />
+              Prompt Rotation: {usePromptRotation ? 'ON' : 'OFF'}
+            </div>
+            <div className="px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+              <BarChart3 className="w-4 h-4 inline mr-1" />
+              Models Tracked: {Object.keys(modelStats).length}
+            </div>
+            <div className="px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+              <TrendingUp className="w-4 h-4 inline mr-1" />
+              Content History: {contentHistory.length}
+            </div>
+          </div>
+        </div>
+
+        {/* API Key Notice */}
         {!apiKey && (
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
             <h4 className="font-medium text-yellow-800 mb-2">🔑 API Key Required</h4>
-            <p className="text-sm text-yellow-700 mb-2">
-              To use the AI generator, you need an OpenRouter API key:
-            </p>
+            <p className="text-sm text-yellow-700 mb-2">Get your OpenRouter API key:</p>
             <ol className="text-sm text-yellow-700 list-decimal list-inside space-y-1">
               <li>Go to <a href="https://openrouter.ai/keys" target="_blank" className="text-blue-600 underline">openrouter.ai/keys</a></li>
               <li>Create a free account and generate an API key</li>
-              <li>Click the Settings ⚙️ button to enter your key</li>
-              <li>Start generating viral content!</li>
+              <li>Click Settings ⚙️ to enter your key</li>
             </ol>
-            <p className="text-xs text-yellow-600 mt-2">
-              💡 Your key is stored locally and never shared
+          </div>
+        )}
+
+        {/* Duplicate Warnings */}
+        {duplicateWarnings.length > 0 && (
+          <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-6">
+            <h4 className="font-medium text-orange-800 mb-2 flex items-center">
+              <AlertTriangle className="w-4 h-4 mr-1" />
+              Duplicate Content Detected
+            </h4>
+            <p className="text-sm text-orange-700 mb-2">
+              {duplicateWarnings.length} generated caption(s) are similar to previous content:
             </p>
+            {duplicateWarnings.map((warning, idx) => (
+              <div key={idx} className="text-xs text-orange-600 mb-1">
+                Caption {warning.index + 1}: {warning.similarity}% similar to content from {new Date(warning.generatedDate).toLocaleDateString()}
+              </div>
+            ))}
           </div>
         )}
 
         {/* Settings Modal */}
         {showSettings && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4">
-              <h3 className="text-xl font-bold mb-4">⚙️ API Settings</h3>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  OpenRouter API Key
-                </label>
+            <div className="bg-white rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              <h2 className="text-xl font-bold mb-4">⚙️ Enhanced Settings</h2>
+              
+              {/* API Key */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">OpenRouter API Key</label>
                 <input
                   type="password"
                   value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
+                  onChange={(e) => {
+                    setApiKey(e.target.value);
+                    localStorage.setItem('openrouter_api_key', e.target.value);
+                  }}
+                  className="w-full p-3 border border-gray-300 rounded-lg"
                   placeholder="sk-or-..."
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
-                <p className="text-xs text-gray-500 mt-1">
-                  Get your API key from <a href="https://openrouter.ai" target="_blank" className="text-blue-500">openrouter.ai</a>
-                </p>
               </div>
-              <div className="flex gap-3">
-                <button 
+
+              {/* Smart Features */}
+              <div className="mb-6 border-t pt-6">
+                <h3 className="font-medium text-gray-800 mb-4">🧠 Smart Features</h3>
+                
+                {/* Prompt Rotation */}
+                <div className="mb-4">
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={usePromptRotation}
+                      onChange={(e) => setUsePromptRotation(e.target.checked)}
+                      className="mr-2"
+                    />
+                    <span className="text-sm">Enable Prompt Rotation</span>
+                  </label>
+                  <p className="text-xs text-gray-600 mt-1">Varies viral formulas for each generation</p>
+                </div>
+
+                {/* Formula Selection */}
+                {usePromptRotation && (
+                  <div className="mb-4 ml-4">
+                    <label className="block text-xs font-medium text-gray-700 mb-2">Select Formulas to Rotate:</label>
+                    <div className="space-y-1">
+                      {Object.entries(viralFormulas).map(([id, formula]) => (
+                        <label key={id} className="flex items-center text-xs">
+                          <input
+                            type="checkbox"
+                            checked={selectedFormulas.includes(id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedFormulas([...selectedFormulas, id]);
+                              } else {
+                                setSelectedFormulas(selectedFormulas.filter(f => f !== id));
+                              }
+                            }}
+                            className="mr-2"
+                          />
+                          <span>{formula.name}</span>
+                        </label>
+                      ))}
+                    </div>
+                    {selectedFormulas.length === 0 && (
+                      <p className="text-xs text-orange-600 mt-1">Will use category defaults if none selected</p>
+                    )}
+                  </div>
+                )}
+
+                {/* Similarity Threshold */}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Duplicate Detection Threshold: {similarityThreshold}%
+                  </label>
+                  <input
+                    type="range"
+                    min="50"
+                    max="90"
+                    value={similarityThreshold}
+                    onChange={(e) => setSimilarityThreshold(parseInt(e.target.value))}
+                    className="w-full"
+                  />
+                  <p className="text-xs text-gray-600">Higher = stricter duplicate detection</p>
+                </div>
+              </div>
+
+              {/* Model Performance Stats */}
+              <div className="mb-6 border-t pt-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-medium text-gray-800">📊 Model Performance</h3>
+                  <button
+                    onClick={() => setShowPerformanceStats(!showPerformanceStats)}
+                    className="text-sm text-blue-600 hover:text-blue-800"
+                  >
+                    {showPerformanceStats ? 'Hide' : 'Show'} Stats
+                  </button>
+                </div>
+                
+                {showPerformanceStats && (
+                  <div className="space-y-2 max-h-40 overflow-y-auto">
+                    {Object.keys(modelStats).length === 0 ? (
+                      <p className="text-sm text-gray-500">No usage data yet</p>
+                    ) : (
+                      Object.entries(modelStats).map(([model, stats]) => (
+                        <div key={model} className="bg-gray-50 p-2 rounded text-xs">
+                          <div className="font-medium">{aiModels[model]?.name || model}</div>
+                          <div className="text-gray-600">
+                            Uses: {stats.totalUses} | Success: {Math.round((stats.successfulGenerations / stats.totalUses) * 100)}% | 
+                            Last used: {new Date(stats.lastUsed).toLocaleDateString()}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-4">
+                <button
                   onClick={() => setShowSettings(false)}
-                  className="flex-1 bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition-colors"
+                  className="flex-1 bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600"
                 >
-                  Cancel
+                  Close
                 </button>
-                <button 
-                  onClick={() => setShowSettings(false)}
-                  className="flex-1 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors"
+                <button
+                  onClick={() => {
+                    localStorage.removeItem('ai_model_stats');
+                    localStorage.removeItem('content_history');
+                    setModelStats({});
+                    setContentHistory([]);
+                    alert('All performance data cleared!');
+                  }}
+                  className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 text-sm"
                 >
-                  Save
+                  Clear Data
                 </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* Main Interface */}
-        <div className="grid lg:grid-cols-3 gap-6">
+        {/* Main Content Grid */}
+        <div className="grid lg:grid-cols-3 gap-8">
           
-          {/* Left Panel - Configuration */}
+          {/* Left Panel - Controls */}
           <div className="lg:col-span-1">
             <div className="bg-white rounded-2xl p-6 shadow-lg">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-800">Configuration</h2>
+                <h2 className="text-xl font-bold text-gray-800">🎯 Smart Generation</h2>
                 <button
                   onClick={() => setShowSettings(true)}
                   className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
@@ -489,6 +721,11 @@ Continue pour tous les ${quantity} posts.`;
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   <Brain className="w-4 h-4 inline mr-1" />
                   AI Model
+                  {modelStats[selectedModel] && (
+                    <span className="text-xs text-green-600 ml-2">
+                      ✓ {modelStats[selectedModel].totalUses} uses
+                    </span>
+                  )}
                 </label>
                 <select
                   value={selectedModel}
@@ -510,7 +747,7 @@ Continue pour tous les ${quantity} posts.`;
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   <Globe className="w-4 h-4 inline mr-1" />
-                  Select Page Profile
+                  Page Profile
                 </label>
                 <select
                   value={selectedPage}
@@ -523,13 +760,6 @@ Continue pour tous les ${quantity} posts.`;
                     </option>
                   ))}
                 </select>
-                <div className="mt-3 p-3 bg-gray-50 rounded-lg text-sm">
-                  <div className="text-gray-700">
-                    <strong>Audience:</strong> {pageProfiles[selectedPage]?.audience}<br/>
-                    <strong>Demographics:</strong> {pageProfiles[selectedPage]?.demographics}<br/>
-                    <strong>Tone:</strong> {pageProfiles[selectedPage]?.tone}
-                  </div>
-                </div>
               </div>
 
               {/* Category Selection */}
@@ -537,49 +767,45 @@ Continue pour tous les ${quantity} posts.`;
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   <Target className="w-4 h-4 inline mr-1" />
                   Content Category
+                  {usePromptRotation && categories[selectedCategory]?.recommendedFormulas && (
+                    <span className="text-xs text-blue-600 ml-2">
+                      📚 {categories[selectedCategory].recommendedFormulas.length} formulas
+                    </span>
+                  )}
                 </label>
-                <div className="space-y-2">
+                <select
+                  value={selectedCategory}
+                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
                   {Object.entries(categories).map(([id, category]) => (
-                    <label key={id} className="flex items-center cursor-pointer">
-                      <input
-                        type="radio"
-                        name="category"
-                        value={id}
-                        checked={selectedCategory === id}
-                        onChange={(e) => setSelectedCategory(e.target.value)}
-                        className="mr-3"
-                      />
-                      <div className="flex-1">
-                        <div className="font-medium text-gray-800">{category.name}</div>
-                        <div className="text-xs text-gray-500">{category.description}</div>
-                        <div className="text-xs text-blue-500 mt-1">
-                          Backgrounds: {category.backgrounds.join(', ')}
-                        </div>
-                      </div>
-                    </label>
+                    <option key={id} value={id}>
+                      {category.name}
+                    </option>
                   ))}
+                </select>
+                <div className="mt-2 p-2 bg-gray-50 rounded text-xs text-gray-600">
+                  {categories[selectedCategory]?.description}
                 </div>
               </div>
 
-              {/* Quantity Selection */}
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <Brain className="w-4 h-4 inline mr-1" />
-                  Number of Texts to Generate
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  max="50"
-                  value={quantity}
-                  onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
-                  placeholder="Enter number (1-50)"
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Recommended: 5-20 texts for optimal variety
-                </p>
-              </div>
+              {/* Formula Preview */}
+              {usePromptRotation && (
+                <div className="mb-6 p-3 bg-blue-50 rounded-lg">
+                  <div className="text-xs font-medium text-blue-800 mb-2">
+                    <Shuffle className="w-3 h-3 inline mr-1" />
+                    Active Formulas:
+                  </div>
+                  <div className="text-xs text-blue-700 space-y-1">
+                    {(selectedFormulas.length > 0 ? selectedFormulas : categories[selectedCategory]?.recommendedFormulas || []).map(formulaId => (
+                      <div key={formulaId} className="flex items-center">
+                        <span className="w-2 h-2 bg-blue-400 rounded-full mr-2"></span>
+                        {viralFormulas[formulaId]?.name || formulaId}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Custom Topic */}
               <div className="mb-6">
@@ -591,16 +817,35 @@ Continue pour tous les ${quantity} posts.`;
                   type="text"
                   value={customTopic}
                   onChange={(e) => setCustomTopic(e.target.value)}
-                  placeholder="e.g., 'teenage kids and technology'"
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="e.g., rentrée scolaire, vacances d'été..."
                 />
+              </div>
+
+              {/* Quantity */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Quantity: {quantity} captions
+                </label>
+                <input
+                  type="range"
+                  min="1"
+                  max="50"
+                  value={quantity}
+                  onChange={(e) => setQuantity(parseInt(e.target.value))}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <span>1</span>
+                  <span>50</span>
+                </div>
               </div>
 
               {/* Generate Button */}
               <button
                 onClick={generateCaptions}
                 disabled={isGenerating || !apiKey}
-                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-4 px-6 rounded-xl font-bold text-lg disabled:opacity-50 hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
               >
                 {isGenerating ? (
                   <>
@@ -610,14 +855,14 @@ Continue pour tous les ${quantity} posts.`;
                 ) : (
                   <>
                     <Wand2 className="w-5 h-5" />
-                    Generate Viral Captions
+                    Generate Smart Captions
                   </>
                 )}
               </button>
 
               {!apiKey && (
                 <p className="text-sm text-red-500 mt-2 text-center">
-                  Configure API key in settings to generate image texts
+                  Configure API key in settings to generate
                 </p>
               )}
             </div>
@@ -626,98 +871,83 @@ Continue pour tous les ${quantity} posts.`;
           {/* Right Panel - Generated Content */}
           <div className="lg:col-span-2">
             <div className="bg-white rounded-2xl p-6 shadow-lg">
-              <h2 className="text-xl font-bold text-gray-800 mb-6">
-                <Zap className="w-5 h-5 inline mr-2" />
-                Generated Viral Captions
-              </h2>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-800">
+                  <Zap className="w-5 h-5 inline mr-2" />
+                  Smart Generated Captions
+                </h2>
+                {generatedContent.length > 0 && (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={cleanAllCaptions}
+                      disabled={isCleaningCaptions}
+                      className="bg-gradient-to-r from-green-500 to-teal-600 text-white px-4 py-2 rounded-lg font-medium hover:shadow-md transition-all duration-300 text-sm flex items-center gap-2"
+                    >
+                      {isCleaningCaptions ? (
+                        <>
+                          <RefreshCw className="w-4 h-4 animate-spin" />
+                          Cleaning...
+                        </>
+                      ) : (
+                        <>
+                          ✨ Clean All Captions
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
+              </div>
 
               {generatedContent.length === 0 ? (
                 <div className="text-center py-12 text-gray-500">
-                  <Wand2 className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                  <p className="text-lg">Configure your settings and generate viral captions</p>
-                  <p className="text-sm">Multi-line captions with perfect French typography</p>
+                  <Brain className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                  <p className="text-lg">Configure settings and generate smart viral captions</p>
+                  <p className="text-sm">Features: Formula rotation, duplicate detection, performance tracking</p>
                 </div>
               ) : (
                 <>
-                  {/* ✅ ENHANCED: Clean Captions Section with French Typography */}
-                  <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-6">
-                    <h3 className="text-lg font-bold text-orange-800 mb-2">🧹 Caption Cleaning & French Typography</h3>
-                    <p className="text-sm text-orange-700 mb-4">
-                      Use this failsafe to clean formatting issues and fix French apostrophes before generating images.
-                    </p>
-                    
-                    <div className="flex gap-3 flex-wrap">
-                      <button
-                        onClick={cleanAllCaptions}
-                        disabled={isCleaningCaptions}
-                        className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-300 disabled:opacity-50 flex items-center gap-2"
-                      >
-                        {isCleaningCaptions ? (
-                          <>
-                            <RefreshCw className="w-5 h-5 animate-spin" />
-                            Cleaning...
-                          </>
-                        ) : (
-                          <>
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                            Clean All Captions ({generatedContent.length})
-                          </>
-                        )}
-                      </button>
-                      
-                      <div className="text-xs text-orange-600 flex items-center">
-                        <strong>Removes:</strong> **, *, emojis, CTAs + <strong>Fixes:</strong> French apostrophes (j'ai → j'ai)
+                  {/* Stats Summary */}
+                  <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4 mb-6">
+                    <div className="grid grid-cols-3 gap-4 text-center">
+                      <div>
+                        <div className="text-2xl font-bold text-blue-600">{generatedContent.length}</div>
+                        <div className="text-xs text-gray-600">Captions Generated</div>
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold text-purple-600">{duplicateWarnings.length}</div>
+                        <div className="text-xs text-gray-600">Duplicates Detected</div>
+                      </div>
+                      <div>
+                        <div className="text-2xl font-bold text-green-600">
+                          {usePromptRotation ? (selectedFormulas.length || 3) : 1}
+                        </div>
+                        <div className="text-xs text-gray-600">Formulas Used</div>
                       </div>
                     </div>
                   </div>
 
-                  {/* ✅ ENHANCED: Caption Display with Quality Indicators */}
+                  {/* Generated Captions */}
                   <div className="space-y-6">
-                    {generatedContent.map((content, index) => (
-                      <div key={content.id} className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow">
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex items-center gap-2">
-                            <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-lg text-sm font-medium">
-                              Caption {content.id}
-                            </span>
-                            <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded-lg text-sm">
-                              {content.background} Background
-                            </span>
-                            <span className="bg-green-100 text-green-800 px-2 py-1 rounded-lg text-xs">
-                              {aiModels[selectedModel]?.name}
-                            </span>
-                            
-                            {/* ✅ ENHANCED: Quality Indicators including French Typography */}
-                            <div className="flex gap-1">
-                              {content.text.includes('**') && (
-                                <span className="bg-red-100 text-red-600 px-2 py-1 rounded text-xs">Markdown</span>
-                              )}
-                              {/🤗|🌟|💕|👇|🔥|✨|💰|📱|❤️|💯|😅|🤔|💙/.test(content.text) && (
-                                <span className="bg-red-100 text-red-600 px-2 py-1 rounded text-xs">Emojis</span>
-                              )}
-                              {/Tag\s+|Commentez\s+|Partagez\s+/i.test(content.text) && (
-                                <span className="bg-red-100 text-red-600 px-2 py-1 rounded text-xs">CTA</span>
-                              )}
-                              {/'/g.test(content.text) && (
-                                <span className="bg-yellow-100 text-yellow-600 px-2 py-1 rounded text-xs">Apostrophes</span>
+                    {generatedContent.map((content, index) => {
+                      const isDuplicate = duplicateWarnings.some(w => w.index === index);
+                      
+                      return (
+                        <div key={content.id} className={`border rounded-xl p-4 transition-all ${isDuplicate ? 'border-orange-300 bg-orange-50' : 'border-gray-200 hover:shadow-md'}`}>
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex items-center gap-2">
+                              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-lg text-sm font-medium">
+                                Caption {content.id}
+                              </span>
+                              <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded-lg text-sm">
+                                {content.background}
+                              </span>
+                              {isDuplicate && (
+                                <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded-lg text-xs flex items-center">
+                                  <AlertTriangle className="w-3 h-3 mr-1" />
+                                  Duplicate Risk
+                                </span>
                               )}
                             </div>
-                          </div>
-                          
-                          <div className="flex gap-2">
-                            {/* ✅ NEW: Individual Clean Button */}
-                            <button
-                              onClick={() => cleanSingleCaption(content.id)}
-                              className="p-2 text-orange-500 hover:text-orange-700 transition-colors"
-                              title="Clean this caption & fix French typography"
-                            >
-                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                              </svg>
-                            </button>
-                            
                             <button
                               onClick={() => copyToClipboard(content.text, content.id)}
                               className="p-2 text-gray-500 hover:text-blue-600 transition-colors"
@@ -730,99 +960,81 @@ Continue pour tous les ${quantity} posts.`;
                               )}
                             </button>
                           </div>
-                        </div>
-                        
-                        <div className="bg-gray-50 rounded-lg p-4 mb-3">
-                          <div className="text-gray-800 font-medium leading-relaxed whitespace-pre-wrap">
-                            {content.text}
+                          
+                          <div className="bg-gray-50 p-4 rounded-lg mb-3">
+                            <div className="text-gray-800 whitespace-pre-line leading-relaxed">
+                              {content.text}
+                            </div>
                           </div>
                         </div>
+                      );
+                    })}
+                    
+                    {/* Action Buttons */}
+                    <div className="text-center pt-6 border-t border-gray-200">
+                      <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-6 mb-6">
+                        <h4 className="font-bold text-gray-800 mb-2">🚀 Ready for Production</h4>
+                        <p className="text-sm text-gray-600 mb-4">
+                          Send these {generatedContent.length} captions to bulk generator for image creation.
+                          Smart backgrounds already suggested!
+                        </p>
                         
                         <button
-                          onClick={() => copyToClipboard(content.text, content.id)}
-                          className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white py-2 px-4 rounded-lg hover:shadow-md transition-all duration-300 font-medium flex items-center justify-center gap-2"
+                          onClick={sendToBulkGenerator}
+                          className="bg-gradient-to-r from-green-500 to-blue-600 text-white py-4 px-8 rounded-xl font-bold text-lg hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-3 mx-auto"
                         >
-                          {copiedIndex === content.id ? (
-                            <>
-                              <Check className="w-4 h-4" />
-                              Copied!
-                            </>
-                          ) : (
-                            <>
-                              <Copy className="w-4 h-4" />
-                              Copy Text
-                            </>
-                          )}
+                          <Zap className="w-6 h-6" />
+                          Send All to Bulk Generator →
+                        </button>
+                        <p className="text-sm text-gray-500 mt-2">
+                          Generate images for all {generatedContent.length} texts with perfect French typography
+                        </p>
+                      </div>
+                      
+                      <div className="text-center">
+                        <button
+                          onClick={generateCaptions}
+                          disabled={isGenerating}
+                          className="bg-gray-100 text-gray-700 py-2 px-6 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                        >
+                          <RefreshCw className="w-4 h-4 inline mr-2" />
+                          Generate New Variations
                         </button>
                       </div>
-                    ))}
-                  </div>
-                  
-                  {/* ✅ ENHANCED: Send to Bulk Generator with Pre-Clean Guidance */}
-                  <div className="text-center pt-6 border-t border-gray-200">
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                      <h4 className="font-medium text-blue-800 mb-2">📸 Ready for Image Generation?</h4>
-                      <p className="text-sm text-blue-700">
-                        Make sure to clean your captions first to fix French typography and remove formatting issues.
-                        Then send them to the bulk generator to create images.
-                      </p>
                     </div>
-                    
-                    <button
-                      onClick={sendToBulkGenerator}
-                      className="bg-gradient-to-r from-green-500 to-blue-600 text-white py-4 px-8 rounded-xl font-bold text-lg hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-3 mx-auto"
-                    >
-                      <Zap className="w-6 h-6" />
-                      Send All to Bulk Generator →
-                    </button>
-                    <p className="text-sm text-gray-500 mt-2">
-                      Generate images for all {generatedContent.length} texts with perfect French typography
-                    </p>
-                  </div>
-                  
-                  <div className="text-center pt-4">
-                    <button
-                      onClick={generateCaptions}
-                      disabled={isGenerating}
-                      className="bg-gray-100 text-gray-700 py-2 px-6 rounded-lg hover:bg-gray-200 transition-colors font-medium"
-                    >
-                      <RefreshCw className="w-4 h-4 inline mr-2" />
-                      Generate New Variations
-                    </button>
-                  </div>
-                </>
-              )}
+                  </>
+                )}
             </div>
           </div>
         </div>
 
-        {/* Integration Info */}
+        {/* Enhanced Integration Info */}
         <div className="mt-8 bg-gradient-to-r from-blue-100 to-purple-100 rounded-2xl p-6">
-          <h3 className="text-lg font-bold text-gray-800 mb-2">🔗 AI → Clean → Bulk Generator Workflow</h3>
+          <h3 className="text-lg font-bold text-gray-800 mb-2">🧠 Enhanced AI → Clean → Bulk Workflow</h3>
           <div className="grid md:grid-cols-4 gap-4 text-center">
             <div className="bg-white rounded-lg p-4">
-              <div className="text-2xl mb-2">🤖</div>
-              <div className="font-bold text-gray-800">1. Generate Viral Captions</div>
-              <div className="text-sm text-gray-600">Create multi-line captions with research-backed viral formulas</div>
+              <div className="text-2xl mb-2">🔄</div>
+              <div className="font-bold text-gray-800">1. Smart Generation</div>
+              <div className="text-sm text-gray-600">Rotated formulas, duplicate detection, performance tracking</div>
             </div>
             <div className="bg-white rounded-lg p-4">
               <div className="text-2xl mb-2">🇫🇷</div>
-              <div className="font-bold text-gray-800">2. Fix French Typography</div>
-              <div className="text-sm text-gray-600">Convert straight apostrophes to French apostrophes automatically</div>
+              <div className="font-bold text-gray-800">2. Fix Typography</div>
+              <div className="text-sm text-gray-600">Perfect French apostrophes and formatting</div>
             </div>
             <div className="bg-white rounded-lg p-4">
               <div className="text-2xl mb-2">🧹</div>
-              <div className="font-bold text-gray-800">3. Clean Captions</div>
-              <div className="text-sm text-gray-600">Remove formatting issues, CTAs, and emojis with one click</div>
+              <div className="font-bold text-gray-800">3. Clean & Optimize</div>
+              <div className="text-sm text-gray-600">Remove CTAs, emojis, and formatting issues</div>
             </div>
             <div className="bg-white rounded-lg p-4">
               <div className="text-2xl mb-2">📸</div>
-              <div className="font-bold text-gray-800">4. Generate Images</div>
-              <div className="text-sm text-gray-600">Create Facebook-style images with perfect typography</div>
+              <div className="font-bold text-gray-800">4. Bulk Generation</div>
+              <div className="text-sm text-gray-600">Create images with smart background suggestions</div>
             </div>
           </div>
           <p className="text-sm text-gray-600 mt-4 text-center">
-            Complete viral content pipeline: AI captions → Fix French typography → Clean captions → Bulk generation → GCS upload → Content Studio export → Facebook posts → Performance Program earnings! 💰🇫🇷
+            Complete smart viral content pipeline: Enhanced AI → Clean → Images → Upload → Export → Performance Program earnings! 💰🧠
           </p>
         </div>
       </div>
@@ -830,4 +1042,4 @@ Continue pour tous les ${quantity} posts.`;
   );
 };
 
-export default AICaptionGenerator;
+export default EnhancedAICaptionGenerator;

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import BulkImporter from '../components/BulkImporter'
 
@@ -14,6 +14,17 @@ const facebookBackgrounds = [
   { type: 'gradient', colors: ['#673ab7', '#e91e63'], textColor: '#ffffff' }, // Image 6: Purple to Pink
   { type: 'gradient', colors: ['#ffc107', '#e91e63'], textColor: '#ffffff' }  // Image 7: Yellow to Pink
 ]
+
+// Background mapping for AI suggestions
+const backgroundMapping = {
+  'Purple-Pink': 5, // Index 5: Purple to Pink
+  'Pink-Blue': 4,   // Index 4: Pink to Blue
+  'Cyan-Purple': 0, // Index 0: Cyan to Purple
+  'Dark': 3,        // Index 3: Dark/Black
+  'Solid Purple': 1, // Index 1: Solid Purple
+  'Pink-Red': 2,    // Index 2: Solid Pink/Red
+  'Yellow-Pink': 6  // Index 6: Yellow to Pink
+}
 
 // Upload function
 const uploadToGCS = async (imageDataUrl, fileName) => {
@@ -49,6 +60,30 @@ export default function Bulk() {
   const [processing, setProcessing] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState({ current: 0, total: 0 })
+  const [aiTextsLoaded, setAiTextsLoaded] = useState(false)
+
+  // Check for AI-generated texts on component mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('source') === 'ai-generator') {
+      const aiTexts = localStorage.getItem('aiGeneratedTexts');
+      if (aiTexts) {
+        try {
+          const parsedTexts = JSON.parse(aiTexts);
+          const formattedData = parsedTexts.map((item: any) => ({
+            text: item.text,
+            background: item.background
+          }));
+          setBulkData(formattedData);
+          setAiTextsLoaded(true);
+          // Clear from localStorage after loading
+          localStorage.removeItem('aiGeneratedTexts');
+        } catch (error) {
+          console.error('Error parsing AI texts:', error);
+        }
+      }
+    }
+  }, []);
 
   const uploadAllToGCS = async () => {
     if (generatedImages.length === 0) {
@@ -256,7 +291,13 @@ export default function Bulk() {
       try {
         const item = bulkData[i]
         const text = item.text || item.caption || 'Default text'
-        const backgroundIndex = i % facebookBackgrounds.length
+        
+        // Use AI-suggested background if available, otherwise cycle through backgrounds
+        let backgroundIndex = i % facebookBackgrounds.length
+        if (item.background && backgroundMapping[item.background] !== undefined) {
+          backgroundIndex = backgroundMapping[item.background]
+        }
+        
         const background = facebookBackgrounds[backgroundIndex]
         
         const dataUrl = await generateCanvas(text, background, `canvas-${i}`)
@@ -266,7 +307,8 @@ export default function Bulk() {
           text: text,
           dataUrl: dataUrl,
           timestamp: new Date().toISOString(),
-          backgroundIndex: backgroundIndex
+          backgroundIndex: backgroundIndex,
+          suggestedBackground: item.background || 'Auto-selected'
         })
         
         setGeneratedImages([...results])
@@ -288,13 +330,32 @@ export default function Bulk() {
         </h1>
         
         <div className="text-center mb-8">
-          <Link 
-            href="/" 
-            className="inline-block bg-white text-blue-600 px-6 py-3 rounded-xl font-semibold border-2 border-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-300"
-          >
-            ← Back to Single
-          </Link>
+          <div className="flex flex-wrap justify-center gap-4">
+            <Link 
+              href="/" 
+              className="inline-block bg-white text-blue-600 px-6 py-3 rounded-xl font-semibold border-2 border-blue-600 hover:bg-blue-600 hover:text-white transition-all duration-300"
+            >
+              ← Single Generator
+            </Link>
+            <Link 
+              href="/ai-generator" 
+              className="inline-block bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-300"
+            >
+              🤖 AI Generator
+            </Link>
+          </div>
         </div>
+
+        {/* AI Texts Loaded Notice */}
+        {aiTextsLoaded && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+            <h4 className="font-medium text-green-800 mb-2">✅ AI Texts Loaded Successfully!</h4>
+            <p className="text-sm text-green-700">
+              {bulkData.length} AI-generated texts have been imported with optimized background suggestions.
+              Ready to generate images!
+            </p>
+          </div>
+        )}
 
         <BulkImporter 
           onDataImported={(data: any[]) => {
@@ -302,7 +363,7 @@ export default function Bulk() {
             setGeneratedImages([])
           }}
           importedData={bulkData}
-          generatedImages={generatedImages} // Pass generated images for Content Studio export
+          generatedImages={generatedImages}
         />
 
         {bulkData.length > 0 && (
@@ -310,6 +371,7 @@ export default function Bulk() {
             <h3 className="text-2xl font-bold text-gray-800 mb-4">🚀 Ready to Process</h3>
             <p className="text-gray-600 mb-6">
               Found {bulkData.length} items ready for generation.
+              {aiTextsLoaded && ' AI-optimized backgrounds will be used where available.'}
             </p>
             
             <div className="flex flex-wrap gap-4">
@@ -337,88 +399,52 @@ export default function Bulk() {
                 disabled={uploading}
                 className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold disabled:opacity-50 hover:shadow-lg transition-all duration-300"
               >
-                {uploading ? `⬆️ Uploading... (${uploadProgress.current}/${uploadProgress.total})` : '☁️ Upload All to Cloud'}
+                {uploading ? 
+                  `⏳ Uploading ${uploadProgress.current}/${uploadProgress.total}...` : 
+                  '☁️ Upload All to Cloud'
+                }
               </button>
               
               <button 
                 onClick={downloadAllImages}
-                className="bg-gradient-to-r from-orange-500 to-red-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-300"
+                className="bg-gradient-to-r from-green-500 to-teal-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-300"
               >
-                📥 Download All
+                📥 Download All Images
               </button>
               
               <button 
                 onClick={exportToCSV}
-                className="bg-gradient-to-r from-green-500 to-teal-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-300"
+                className="bg-gradient-to-r from-orange-500 to-red-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-300"
               >
-                📊 Export CSV
+                📋 Export CSV Data
               </button>
             </div>
 
-            {/* Upload Progress */}
-            {uploading && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-blue-700 font-medium">Uploading to Google Cloud Storage...</span>
-                  <span className="text-blue-600">{uploadProgress.current}/{uploadProgress.total}</span>
-                </div>
-                <div className="w-full bg-blue-200 rounded-full h-2">
-                  <div 
-                    className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
-                    style={{ width: `${(uploadProgress.current / uploadProgress.total) * 100}%` }}
-                  ></div>
-                </div>
-              </div>
-            )}
-
-            {/* Success/Error Summary */}
-            {generatedImages.some(img => img.gcsUrl !== undefined) && (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-                <div className="text-green-700">
-                  <strong>Upload Results:</strong>
-                  <ul className="mt-2 space-y-1">
-                    <li>✅ Successfully uploaded: {generatedImages.filter(img => img.gcsUrl).length}</li>
-                    <li>❌ Failed uploads: {generatedImages.filter(img => img.gcsUrl === null).length}</li>
-                  </ul>
-                </div>
-              </div>
-            )}
-            
-            {/* Preview Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {generatedImages.map((image, index) => (
-                <div key={image.id} className="bg-white rounded-lg overflow-hidden shadow-lg">
+            {/* Image Preview Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
+              {generatedImages.slice(0, 8).map((img, index) => (
+                <div key={index} className="text-center">
                   <img 
-                    src={image.dataUrl} 
-                    alt={`Generated caption ${index + 1}`}
-                    className="w-full h-48 object-cover"
+                    src={img.dataUrl} 
+                    alt={`Generated ${index + 1}`}
+                    className="w-full aspect-[4/5] object-cover rounded-lg shadow-md mb-2"
                   />
-                  <div className="p-3">
-                    <p className="text-xs text-gray-600 mb-2 line-clamp-2">
-                      {image.text.substring(0, 50)}...
-                    </p>
-                    <div className="flex justify-between items-center">
-                      <span className="text-xs text-gray-500">#{index + 1}</span>
-                      {image.gcsUrl && (
-                        <span className="text-xs text-green-600 font-semibold">☁️ Uploaded</span>
-                      )}
-                      {image.error && (
-                        <span className="text-xs text-red-600 font-semibold">❌ Error</span>
-                      )}
-                    </div>
-                    {image.gcsUrl && (
-                      <a 
-                        href={image.gcsUrl} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-xs text-blue-600 hover:underline block mt-1"
-                      >
-                        View in Cloud
-                      </a>
-                    )}
+                  <div className="text-xs text-gray-600">
+                    {img.text.substring(0, 30)}...
+                  </div>
+                  <div className="text-xs text-blue-600">
+                    {img.suggestedBackground}
                   </div>
                 </div>
               ))}
+              {generatedImages.length > 8 && (
+                <div className="flex items-center justify-center bg-gray-100 rounded-lg aspect-[4/5]">
+                  <div className="text-center text-gray-500">
+                    <div className="text-2xl mb-2">+{generatedImages.length - 8}</div>
+                    <div className="text-sm">More images</div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}

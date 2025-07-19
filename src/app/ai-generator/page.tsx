@@ -217,11 +217,24 @@ Make each text emotionally powerful, relatable to ${page.audience}, and perfect 
     }
   };
 
-  const useInGenerator = (content) => {
-    // This would integrate with your existing canvas generator
-    // For now, we'll copy to clipboard
-    copyToClipboard(content.text, content.id);
-    alert(`Image text copied! Now use it in your canvas generator with ${content.background} background.`);
+  const sendToBulkGenerator = () => {
+    if (generatedContent.length === 0) {
+      alert('No content to send. Generate some texts first!');
+      return;
+    }
+
+    // Format data for bulk generator
+    const bulkData = generatedContent.map((content, index) => ({
+      text: content.text,
+      background: content.background,
+      id: index + 1
+    }));
+
+    // Store in localStorage for bulk generator to pickup
+    localStorage.setItem('aiGeneratedTexts', JSON.stringify(bulkData));
+    
+    // Redirect to bulk generator
+    window.location.href = '/bulk?source=ai-generator';
   };
 
   return (
@@ -374,18 +387,18 @@ Make each text emotionally powerful, relatable to ${page.audience}, and perfect 
                   <Brain className="w-4 h-4 inline mr-1" />
                   Number of Texts to Generate
                 </label>
-                <select
+                <input
+                  type="number"
+                  min="1"
+                  max="50"
                   value={quantity}
-                  onChange={(e) => setQuantity(parseInt(e.target.value))}
+                  onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
+                  placeholder="Enter number (1-50)"
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value={3}>3 texts</option>
-                  <option value={5}>5 texts</option>
-                  <option value={8}>8 texts</option>
-                  <option value={10}>10 texts</option>
-                  <option value={15}>15 texts</option>
-                  <option value={20}>20 texts</option>
-                </select>
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Recommended: 5-20 texts for optimal variety
+                </p>
               </div>
 
               {/* Custom Topic */}
@@ -479,13 +492,37 @@ Make each text emotionally powerful, relatable to ${page.audience}, and perfect 
                       </div>
                       
                       <button
-                        onClick={() => useInGenerator(content)}
-                        className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white py-2 px-4 rounded-lg hover:shadow-md transition-all duration-300 font-medium"
+                        onClick={() => copyToClipboard(content.text, content.id)}
+                        className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white py-2 px-4 rounded-lg hover:shadow-md transition-all duration-300 font-medium flex items-center justify-center gap-2"
                       >
-                        Use in Canvas Generator →
+                        {copiedIndex === content.id ? (
+                          <>
+                            <Check className="w-4 h-4" />
+                            Copied!
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-4 h-4" />
+                            Copy Text
+                          </>
+                        )}
                       </button>
                     </div>
                   ))}
+                  
+                  {/* Send to Bulk Generator Button */}
+                  <div className="text-center pt-6 border-t border-gray-200">
+                    <button
+                      onClick={sendToBulkGenerator}
+                      className="bg-gradient-to-r from-green-500 to-blue-600 text-white py-4 px-8 rounded-xl font-bold text-lg hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-3 mx-auto"
+                    >
+                      <Zap className="w-6 h-6" />
+                      Send All to Bulk Generator →
+                    </button>
+                    <p className="text-sm text-gray-500 mt-2">
+                      Generate images for all {generatedContent.length} texts at once
+                    </p>
+                  </div>
                   
                   <div className="text-center pt-4">
                     <button
@@ -505,19 +542,26 @@ Make each text emotionally powerful, relatable to ${page.audience}, and perfect 
 
         {/* Integration Info */}
         <div className="mt-8 bg-gradient-to-r from-blue-100 to-purple-100 rounded-2xl p-6">
-          <h3 className="text-lg font-bold text-gray-800 mb-2">🔗 Integration with Your Existing App</h3>
-          <p className="text-gray-700 mb-3">
-            This AI generator creates SHORT IMAGE TEXTS optimized for your audience. Copy any text and use it in your existing canvas generator at:
-          </p>
-          <a 
-            href="https://fb-caption-generator.vercel.app/" 
-            target="_blank"
-            className="inline-block bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors font-medium"
-          >
-            Open Canvas Generator →
-          </a>
-          <p className="text-sm text-gray-600 mt-3">
-            The AI creates 5-15 word texts perfect for image overlays and automatically suggests the best background color based on emotional psychology research.
+          <h3 className="text-lg font-bold text-gray-800 mb-2">🔗 AI → Bulk Generator Workflow</h3>
+          <div className="grid md:grid-cols-3 gap-4 text-center">
+            <div className="bg-white rounded-lg p-4">
+              <div className="text-2xl mb-2">🤖</div>
+              <div className="font-bold text-gray-800">1. Generate AI Texts</div>
+              <div className="text-sm text-gray-600">Create viral content with research-backed prompts</div>
+            </div>
+            <div className="bg-white rounded-lg p-4">
+              <div className="text-2xl mb-2">⚡</div>
+              <div className="font-bold text-gray-800">2. Send to Bulk</div>
+              <div className="text-sm text-gray-600">Auto-transfer all texts to bulk generator</div>
+            </div>
+            <div className="bg-white rounded-lg p-4">
+              <div className="text-2xl mb-2">📸</div>
+              <div className="font-bold text-gray-800">3. Generate Images</div>
+              <div className="text-sm text-gray-600">Create all images with optimal backgrounds</div>
+            </div>
+          </div>
+          <p className="text-sm text-gray-600 mt-4 text-center">
+            Streamlined workflow: AI texts → Bulk generation → GCS upload → Content Studio export → Facebook posts → Performance Program earnings! 💰
           </p>
         </div>
       </div>

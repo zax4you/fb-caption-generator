@@ -229,52 +229,57 @@ export default function Bulk() {
     alert(`📋 Exported ${imagesWithUrls.length} images to Content Studio CSV format!`);
   }
 
-  const generateCanvas = (text: string, background: any, canvasId: string) => {
-    return new Promise<string>((resolve) => {
-      const canvas = document.createElement('canvas')
-      canvas.width = 1080
-      canvas.height = 1350
-      const ctx = canvas.getContext('2d')!
+const generateCanvas = (text: string, background: any, canvasId: string) => {
+  return new Promise<string>((resolve) => {
+    const canvas = document.createElement('canvas')
+    canvas.width = 1080
+    canvas.height = 1350
+    const ctx = canvas.getContext('2d')!
 
-      // Create gradient or solid background
-      let gradient
-      if (background.type === 'gradient' && background.colors.length > 1) {
-        gradient = ctx.createLinearGradient(0, 0, 0, canvas.height)
-        gradient.addColorStop(0, background.colors[0])
-        gradient.addColorStop(1, background.colors[1])
-        ctx.fillStyle = gradient
-      } else {
-        ctx.fillStyle = background.colors[0]
-      }
-      
-      ctx.fillRect(0, 0, canvas.width, canvas.height)
+    // Create gradient or solid background
+    let gradient
+    if (background.type === 'gradient' && background.colors.length > 1) {
+      gradient = ctx.createLinearGradient(0, 0, 0, canvas.height)
+      gradient.addColorStop(0, background.colors[0])
+      gradient.addColorStop(1, background.colors[1])
+      ctx.fillStyle = gradient
+    } else {
+      ctx.fillStyle = background.colors[0]
+    }
+    
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-      // Text styling (Facebook authentic)
-      ctx.fillStyle = background.textColor
-      ctx.textAlign = 'center'
-      ctx.textBaseline = 'middle'
+    // Text styling (Facebook authentic)
+    ctx.fillStyle = background.textColor
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+    
+    // Facebook's font stack for authenticity
+    let fontSize = 64
+    ctx.font = `800 ${fontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif`
+    
+    // Text shadow for better readability
+    ctx.shadowColor = 'rgba(0,0,0,0.15)'
+    ctx.shadowOffsetX = 2
+    ctx.shadowOffsetY = 2
+    ctx.shadowBlur = 4
+    
+    // ✅ IMPROVED: Smart text wrapping with better line breaks
+    const maxWidth = canvas.width * 0.85  // Slightly wider for better use of space
+    const maxHeight = canvas.height * 0.75
+    
+    let lines: string[] = []
+    let totalHeight = 0
+    let lineHeight = fontSize * 1.25  // ✅ INCREASED line height for better spacing
+    
+    // ✅ RESPECT EXISTING LINE BREAKS in the text
+    const paragraphs = text.split('\n').filter(p => p.trim().length > 0)
+    
+    for (const paragraph of paragraphs) {
+      if (paragraph.trim().length === 0) continue
       
-      // Facebook's font stack for authenticity
-      let fontSize = 64
-      ctx.font = `800 ${fontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif`
-      
-      // Text shadow for better readability
-      ctx.shadowColor = 'rgba(0,0,0,0.15)'
-      ctx.shadowOffsetX = 2
-      ctx.shadowOffsetY = 2
-      ctx.shadowBlur = 4
-      
-      // Smart text wrapping and auto-sizing
-      const maxWidth = canvas.width * 0.88
-      const maxHeight = canvas.height * 0.75
-      const padding = canvas.width * 0.06
-      
-      let lines: string[] = []
-      let totalHeight = 0
-      let lineHeight = fontSize * 1.15
-      
-      // Auto-wrap text into lines
-      const words = text.split(' ')
+      // Auto-wrap each paragraph
+      const words = paragraph.trim().split(' ')
       let currentLine = ''
       
       for (const word of words) {
@@ -296,17 +301,28 @@ export default function Bulk() {
         lines.push(currentLine)
       }
       
-      // Calculate total height and adjust font size if needed
-      totalHeight = lines.length * lineHeight
+      // ✅ ADD SMALL BREAK between paragraphs (but not after last one)
+      if (paragraphs.indexOf(paragraph) < paragraphs.length - 1) {
+        lines.push('') // Empty line for paragraph break
+      }
+    }
+    
+    // Calculate total height and adjust font size if needed
+    totalHeight = lines.length * lineHeight
+    
+    while (totalHeight > maxHeight && fontSize > 36) { // ✅ Lower minimum font size
+      fontSize -= 2  // ✅ Smaller decrements for finer control
+      lineHeight = fontSize * 1.25
+      ctx.font = `800 ${fontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif`
       
-      while (totalHeight > maxHeight && fontSize > 40) {
-        fontSize -= 3
-        lineHeight = fontSize * 1.15
-        ctx.font = `800 ${fontSize}px -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif`
+      // Recalculate with new font size
+      lines = []
+      
+      for (const paragraph of paragraphs) {
+        if (paragraph.trim().length === 0) continue
         
-        // Recalculate lines with new font size
-        lines = []
-        currentLine = ''
+        const words = paragraph.trim().split(' ')
+        let currentLine = ''
         
         for (const word of words) {
           const testLine = currentLine + (currentLine ? ' ' : '') + word
@@ -327,21 +343,28 @@ export default function Bulk() {
           lines.push(currentLine)
         }
         
-        totalHeight = lines.length * lineHeight
+        if (paragraphs.indexOf(paragraph) < paragraphs.length - 1) {
+          lines.push('')
+        }
       }
       
-      // Center text vertically
-      const startY = (canvas.height - totalHeight) / 2 + lineHeight / 2
-      
-      // Draw text lines
-      lines.forEach((line, index) => {
-        const y = startY + (index * lineHeight)
+      totalHeight = lines.length * lineHeight
+    }
+    
+    // ✅ BETTER: Center text vertically with proper spacing
+    const startY = (canvas.height - totalHeight) / 2 + lineHeight * 0.4
+    
+    // Draw text lines with proper spacing
+    lines.forEach((line, index) => {
+      const y = startY + (index * lineHeight)
+      if (line.trim().length > 0) {  // Only draw non-empty lines
         ctx.fillText(line, canvas.width / 2, y)
-      })
-      
-      resolve(canvas.toDataURL('image/webp', 0.92))
+      }
     })
-  }
+    
+    resolve(canvas.toDataURL('image/webp', 0.92))
+  })
+}
 
   const processBulkGeneration = async () => {
     setProcessing(true)

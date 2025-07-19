@@ -110,6 +110,28 @@ const AICaptionGenerator = () => {
     }
   };
 
+  // ✅ ENHANCED: Clean text function to remove all formatting
+  const cleanText = (text) => {
+    return text
+      .replace(/^\*\*\s*/, '')                    // Remove ** at the beginning
+      .replace(/\s*\*\*$/, '')                    // Remove ** at the end
+      .replace(/\*\*/g, '')                       // Remove all other ** 
+      .replace(/\*/g, '')                         // Remove single *
+      .replace(/_{2,}/g, '')                      // Remove __
+      .replace(/`+/g, '')                         // Remove backticks
+      .replace(/#{1,6}\s*/g, '')                  // Remove headers
+      .replace(/^\s*[-*+]\s*/gm, '')              // Remove bullet points
+      .replace(/^\s*\d+\.\s*/gm, '')              // Remove numbered lists
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')    // Convert links
+      .replace(/Tag\s+[^.!?]*[.!?]/gi, '')        // Remove CTA sentences
+      .replace(/Commentez\s+[^.!?]*[.!?]/gi, '')  // Remove comment requests
+      .replace(/Partagez\s+[^.!?]*[.!?]/gi, '')   // Remove share requests
+      .replace(/Qui\s+est\s+d'accord[^.!?]*[.!?]/gi, '') // Remove agreement requests
+      .replace(/👇|🔥|✨|💰|📱|❤️|💯|😅|🤔|💙/g, '') // Remove common emojis
+      .replace(/["""]/g, '')                      // Remove smart quotes
+      .trim();
+  };
+
   // Enhanced viral formulas based on your successful captions analysis
   const getViralPrompt = (pageId, categoryId, topic = '', quantity) => {
     const page = pageProfiles[pageId];
@@ -132,84 +154,65 @@ Distribute evenly across all categories.`;
 EXAMPLE FORMATS (vary the structure):
 
 Format 1 - Age Revelation:
-"À 40 ans, j'ai compris...
-
-Nos parents avaient raison sur TOUT.
-
-Mais on était trop fiers pour l'admettre.
-
-Tag un parent qui mérite des excuses 👇"
+À 40 ans, j'ai compris
+Nos parents avaient raison sur TOUT
+Mais on était trop fiers pour l'admettre
 
 Format 2 - Wisdom Statement:
-"20 ans de mariage m'ont appris:
+20 ans de mariage m'ont appris
+L'amour, ce n'est pas les papillons dans le ventre
+C'est rester quand il n'y en a plus
 
-L'amour, ce n'est pas les papillons dans le ventre.
-
-C'est rester quand il n'y en a plus.
-
-Qui est d'accord? 💙"
-
-Format 3 - Nostalgic Question:
-"Qui se souvient:
-
-Des appels téléphoniques à heure fixe?
-Des cassettes qu'il fallait rembobiner?
-Du stress quand on ratait son émission?
-
-Commentez votre souvenir d'avant internet 👇"`;
+Format 3 - Nostalgic Reflection:
+Qui se souvient des appels téléphoniques à heure fixe
+Des cassettes qu'il fallait rembobiner
+Du stress quand on ratait son émission`;
     } else {
       categoryPrompt = `CATEGORY: ${category.name} - ${category.description}`;
       
       if (categoryId === 'family-relationships') {
         exampleFormats = `
 FAMILY & RELATIONSHIPS EXAMPLES:
-"À 40 ans, j'ai compris...
-Nos parents avaient raison sur TOUT.
-Mais on était trop fiers pour l'admettre.
-Tag un parent qui mérite des excuses 👇"
+À 40 ans, j'ai compris
+Nos parents avaient raison sur TOUT
+Mais on était trop fiers pour l'admettre
 
-"Mes enfants: 'Maman, tu fais comment?'
-Moi: 'Attends, je googlelise...'
-Qui se reconnaît dans cette situation? 😅"`;
+Mes enfants: Maman, tu fais comment
+Moi: Attends, je googlelise
+La technologie a tout changé`;
       } else if (categoryId === 'life-wisdom') {
         exampleFormats = `
 LIFE WISDOM EXAMPLES:
-"Personne ne m'avait dit qu'à 45 ans...
-Je serais encore en train de chercher ma voie.
-Et que c'est complètement normal.
-Partagez si vous vous reconnaissez ✨"
+Personne ne m'avait dit qu'à 45 ans
+Je serais encore en train de chercher ma voie
+Et que c'est complètement normal
 
-"J'ai mis 30 ans à comprendre:
-L'argent ne fait pas le bonheur...
-Mais l'absence d'argent fait le malheur.
-Commentez 'VRAI' si vous êtes d'accord 💰"`;
+J'ai mis 30 ans à comprendre
+L'argent ne fait pas le bonheur
+Mais l'absence d'argent fait le malheur`;
       } else if (categoryId === 'motivation-success') {
         exampleFormats = `
 MOTIVATION & SUCCESS EXAMPLES:
-"J'ai échoué 100 fois avant mes 50 ans.
-Puis j'ai compris:
-Chaque échec me rapprochait du succès.
-Votre plus grand échec en commentaire? 👇"
+J'ai échoué 100 fois avant mes 50 ans
+Puis j'ai compris
+Chaque échec me rapprochait du succès
 
-"À 35 ans, j'ai abandonné mon rêve.
-À 45 ans, je l'ai repris.
-Aujourd'hui, je vis de ma passion.
-Il n'est jamais trop tard pour recommencer ✨"`;
+À 35 ans, j'ai abandonné mon rêve
+À 45 ans, je l'ai repris
+Aujourd'hui, je vis de ma passion`;
       } else if (categoryId === 'nostalgia-memory') {
         exampleFormats = `
 NOSTALGIA & MEMORY EXAMPLES:
-"Il y a 20 ans, je me disais:
-'À 40 ans, j'aurai tout compris.'
-Spoiler alert: Je comprends encore moins qu'avant.
-Et vous, vous avez l'impression de comprendre la vie? 🤔"`;
+Il y a 20 ans, je me disais
+À 40 ans, j'aurai tout compris
+Spoiler alert: Je comprends encore moins qu'avant`;
       } else if (categoryId === 'humor-social') {
         exampleFormats = `
 HUMOR & SOCIAL COMMENTARY EXAMPLES:
-"Avant: 'Va jouer dehors!'
-Maintenant: 'Mets ta crème solaire, ton casque, 
-tes genouillères et ton portable avec le GPS activé.'
-Les temps changent... 
-Partagez si vous êtes aussi devenus des parents anxieux 📱"`;
+Avant: Va jouer dehors
+Maintenant: Mets ta crème solaire, ton casque, 
+tes genouillères et ton portable avec le GPS activé
+Les temps changent`;
       }
     }
     
@@ -223,28 +226,21 @@ PROVEN SUCCESS DATA:
 - Tone: ${page.tone}
 
 VIRAL CAPTION STRUCTURE (MANDATORY):
-Each caption MUST follow this 4-part structure:
+Each caption MUST follow this 3-part structure:
 
 1. HOOK (1-2 lines): Age-specific opener that creates immediate curiosity
    - "À [age] ans, j'ai compris..."
    - "Personne ne m'avait dit qu'à [age] ans..."
    - "[Number] ans de [experience] m'ont appris:"
 
-2. REVELATION/STORY (2-4 lines): The main insight or story
+2. REVELATION/STORY (3-5 lines): The main insight or story
    - Personal vulnerability or universal truth
    - Emotional connection with the audience
    - Relatable life experience
 
 3. VALIDATION/EXPANSION (1-2 lines): Reinforce the message
-   - Add depth or contradiction
-   - Make it more relatable
-   - Build emotional connection
-
-4. CALL-TO-ACTION (1 line): Drive engagement
-   - "Tag quelqu'un qui..."
-   - "Commentez [WORD] si..."
-   - "Partagez si vous vous reconnaissez"
-   - "Qui est d'accord? [emoji]"
+   - Add depth or make it more relatable
+   - End with a natural, thoughtful conclusion
 
 ${categoryPrompt}
 ${topic ? `SPECIFIC TOPIC: ${topic}` : ''}
@@ -253,11 +249,13 @@ ${exampleFormats}
 
 CONTENT REQUIREMENTS:
 - Generate ${quantity} complete viral captions
-- Each caption should be 4-8 lines long (NOT single lines)
-- Include strategic line breaks for readability
-- End with engaging call-to-action
-- Use relevant emojis sparingly (1-2 per caption)
+- Each caption should be 4-7 lines long with natural line breaks
+- NO call-to-action requests (no "Tag quelqu'un", "Commentez", etc.)
+- NO emojis or special characters
 - Age references should target ${page.audience}
+- Use PLAIN TEXT ONLY - no markdown formatting (**, *, etc.)
+- Each line should be a complete thought
+- Natural paragraph breaks between concepts
 
 PSYCHOLOGICAL TRIGGERS TO INCLUDE:
 - Nostalgia and time passage
@@ -265,21 +263,20 @@ PSYCHOLOGICAL TRIGGERS TO INCLUDE:
 - Family and relationship dynamics
 - Universal life struggles
 - Vulnerability and authenticity
-- Generational gaps and changes
 
 FORMAT YOUR RESPONSE EXACTLY AS:
 
 CAPTION 1:
-[Multi-line caption with hook, story, validation, CTA]
+[Multi-line caption with natural line breaks, no CTA, no formatting]
 BACKGROUND: [suggested background color]
 
 CAPTION 2:
-[Multi-line caption with hook, story, validation, CTA]
+[Multi-line caption with natural line breaks, no CTA, no formatting]
 BACKGROUND: [suggested background color]
 
 Continue for all ${quantity} captions.
 
-Make each caption emotionally powerful, highly shareable, and optimized for maximum comments/reactions.`;
+Make each caption emotionally powerful and naturally shareable without forced engagement requests.`;
 
     return basePrompt;
   };
@@ -324,7 +321,7 @@ Make each caption emotionally powerful, highly shareable, and optimized for maxi
       const data = await response.json();
       const content = data.choices[0].message.content;
       
-      // Parse the structured response for full captions
+      // ✅ ENHANCED: Parse the structured response for full captions
       const captionMatches = content.match(/CAPTION \d+:\s*([\s\S]*?)(?=BACKGROUND:|$)/gi);
       const backgroundMatches = content.match(/BACKGROUND:\s*([^\n]+)/gi);
       
@@ -336,21 +333,23 @@ Make each caption emotionally powerful, highly shareable, and optimized for maxi
           
           return {
             id: index + 1,
-            text: captionText.replace(/["""]/g, '').trim(),
+            // ✅ APPLY ENHANCED CLEANING
+            text: cleanText(captionText),
             background: backgroundText
           };
         });
         
         setGeneratedContent(parsedContent);
       } else {
-        // Fallback parsing for different formats
+        // ✅ ENHANCED: Fallback parsing for different formats
         const sections = content.split(/CAPTION \d+:|TEXT \d+:/i).filter(section => section.trim().length > 10);
         const fallbackContent = sections.slice(0, quantity).map((section, index) => {
           const lines = section.split('\n').filter(line => line.trim().length > 0);
           const textLines = lines.filter(line => !line.includes('BACKGROUND:'));
           const backgroundLine = lines.find(line => line.includes('BACKGROUND:'));
           
-          const text = textLines.join('\n').trim().replace(/["""]/g, '');
+          // ✅ APPLY ENHANCED CLEANING TO FALLBACK TOO
+          const text = cleanText(textLines.join('\n'));
           const background = backgroundLine ? 
             backgroundLine.replace(/BACKGROUND:\s*/i, '').trim() : 
             categories[selectedCategory]?.backgrounds[index % categories[selectedCategory]?.backgrounds.length] || 'Purple-Pink';

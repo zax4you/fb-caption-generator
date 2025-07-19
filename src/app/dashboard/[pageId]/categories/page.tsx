@@ -256,12 +256,19 @@ export default function CategoryGenerator({ params }: { params: { pageId: string
               <button
                 key={topic}
                 onClick={() => setFormData(prev => ({ ...prev, topic }))}
-                className="p-3 bg-gradient-to-r from-orange-100 to-red-100 text-gray-800 rounded-xl hover:from-orange-200 hover:to-red-200 transition-all duration-300 text-sm font-medium"
+                className={`p-3 rounded-xl transition-all duration-300 text-sm font-medium ${
+                  formData.topic === topic
+                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white transform scale-105 shadow-lg'
+                    : 'bg-gradient-to-r from-orange-100 to-red-100 text-gray-800 hover:from-orange-200 hover:to-red-200'
+                }`}
               >
                 {topic}
               </button>
             ))}
           </div>
+          <p className="text-xs text-gray-500 mt-3 text-center">
+            Click a trending topic to auto-fill the topic field below
+          </p>
         </div>
 
         {/* Category Creation Form */}

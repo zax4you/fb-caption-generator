@@ -511,41 +511,74 @@ GÉNÈRE ${quantity} posts viraux en utilisant les formules sélectionnées avec
       const data = await response.json();
       const content = data.choices[0].message.content;
       
-      // Parse generated content
-      const lines = content.split('\n').filter(line => line.trim().length > 0);
+      // Parse generated content - IMPROVED PARSING
+      const content = data.choices[0].message.content;
+      
+      // Remove the intro text and split by post markers
+      let cleanContent = content;
+      
+      // Remove intro lines like "Voici cinq posts viraux..."
+      cleanContent = cleanContent.replace(/^.*?voici.*?posts.*?:/i, '');
+      
+      // Split by post markers (Post 1, Post 2, etc.) or by **Post markers
+      const postSections = cleanContent.split(/\*\*Post \d+.*?\*\*|\bPost \d+.*?:|(?=\*\*Post \d+)|(?=Post \d+)/i).filter(section => section.trim().length > 0);
+      
       const results = [];
-      let currentCaption = '';
       let captionCount = 0;
       
-      for (const line of lines) {
-        if (line.trim().length > 0) {
-          currentCaption += line + '\n';
-        } else if (currentCaption.trim().length > 0) {
-          captionCount++;
-          const categoryBgs = categories[selectedCategory]?.backgrounds || ['Dark'];
-          const randomBg = categoryBgs[Math.floor(Math.random() * categoryBgs.length)];
-          
-          results.push({
-            id: captionCount,
-            text: currentCaption.trim(),
-            background: randomBg
-          });
-          currentCaption = '';
-          
-          if (results.length >= quantity) break;
-        }
-      }
-      
-      // Add any remaining content
-      if (currentCaption.trim().length > 0 && results.length < quantity) {
-        captionCount++;
-        const categoryBgs = categories[selectedCategory]?.backgrounds || ['Dark'];
-        const randomBg = categoryBgs[Math.floor(Math.random() * categoryBgs.length)];
+      postSections.forEach((section) => {
+        // Clean up the section
+        let cleanSection = section
+          .replace(/^\*\*.*?\*\*/g, '') // Remove post headers
+          .replace(/^Post \d+.*?:/g, '') // Remove "Post N:" headers
+          .replace(/\*\*/g, '') // Remove all ** formatting
+          .trim();
         
-        results.push({
-          id: captionCount,
-          text: currentCaption.trim(),
-          background: randomBg
+        // Skip empty sections or intro text
+        if (cleanSection.length < 50) return;
+        
+        // If section contains multiple paragraphs, treat each as potential caption
+        const paragraphs = cleanSection.split('\n\n').filter(p => p.trim().length > 50);
+        
+        paragraphs.forEach((paragraph) => {
+          const cleanParagraph = paragraph.trim();
+          if (cleanParagraph.length > 50 && captionCount < quantity) {
+            captionCount++;
+            const categoryBgs = categories[selectedCategory]?.backgrounds || ['Dark'];
+            const randomBg = categoryBgs[Math.floor(Math.random() * categoryBgs.length)];
+            
+            results.push({
+              id: captionCount,
+              text: cleanParagraph,
+              background: randomBg
+            });
+          }
+        });
+      });
+      
+      // If we still don't have enough results, try splitting by double line breaks
+      if (results.length < quantity) {
+        const fallbackSections = content.split('\n\n').filter(section => {
+          const clean = section.replace(/\*\*/g, '').trim();
+          return clean.length > 50 && 
+                 !clean.toLowerCase().includes('voici') && 
+                 !clean.toLowerCase().includes('post');
+        });
+        
+        fallbackSections.forEach((section) => {
+          if (results.length >= quantity) return;
+          
+          const cleanSection = section.replace(/\*\*/g, '').trim();
+          if (cleanSection.length > 50) {
+            const categoryBgs = categories[selectedCategory]?.backgrounds || ['Dark'];
+            const randomBg = categoryBgs[Math.floor(Math.random() * categoryBgs.length)];
+            
+            results.push({
+              id: results.length + 1,
+              text: cleanSection,
+              background: randomBg
+            });
+          }
         });
       }
 

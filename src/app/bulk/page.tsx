@@ -91,6 +91,31 @@ export default function Bulk() {
       return
     }
 
+    // TEMPORARY: Skip upload and just mark as "uploaded" for testing
+    const skipUpload = true; // Set to false when GCS is working
+    
+    if (skipUpload) {
+      console.log('🔧 DEMO MODE: Skipping actual upload, generating mock URLs');
+      
+      const mockResults = generatedImages.map((image, index) => {
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const dateFolder = timestamp.split('T')[0]; // YYYY-MM-DD
+        const timeStamp = timestamp.split('T')[1].split('.')[0]; // HH-MM-SS
+        
+        return {
+          ...image,
+          gcsUrl: `https://storage.googleapis.com/viral-content-inspiring-lore/facebook-captions/${dateFolder}/${timeStamp}_${image.id}.webp`,
+          gcsPath: `facebook-captions/${dateFolder}/${timeStamp}_${image.id}.webp`,
+          fileName: `${timeStamp}_${image.id}.webp`
+        };
+      });
+      
+      setGeneratedImages(mockResults);
+      alert(`✅ DEMO MODE: ${mockResults.length} images "uploaded" with mock URLs!\n\n🔧 GCS upload temporarily disabled while debugging.\n📋 You can still export CSV and download images.`);
+      return;
+    }
+
+    // Original upload code (when GCS is working)
     setUploading(true)
     setUploadProgress({ current: 0, total: generatedImages.length })
 
@@ -146,15 +171,39 @@ export default function Bulk() {
   }
 
   const exportToCSV = () => {
-    const headers = ['id', 'text', 'dataUrl', 'timestamp', 'gcsUrl']
+    // Filter only images with mock or real URLs for Content Studio export
+    const imagesWithUrls = generatedImages.filter(img => img.gcsUrl);
+    
+    if (imagesWithUrls.length === 0) {
+      alert('No images with URLs to export. Upload images first (even in demo mode).');
+      return;
+    }
+
+    // Content Studio format
+    const headers = [
+      'Post date and time',
+      'Post caption', 
+      'Image URLs',
+      'Link',
+      'First Comment',
+      'Include Link in Caption',
+      'Video URL',
+      'Post Type',
+      'Title'
+    ];
+    
     const csvData = [
       headers.join(','),
-      ...generatedImages.map(img => [
-        img.id,
-        `"${img.text.replace(/"/g, '""')}"`,
-        `"${img.dataUrl}"`,
-        img.timestamp,
-        img.gcsUrl || ''
+      ...imagesWithUrls.map(img => [
+        '', // Post date and time (empty for manual scheduling)
+        '', // Post caption (empty for manual entry)
+        `"${img.gcsUrl}"`, // Image URL
+        '', // Link
+        '', // First Comment
+        'No', // Include Link in Caption
+        '', // Video URL
+        'Feed', // Post Type
+        '' // Title
       ].join(','))
     ].join('\n')
 
@@ -162,9 +211,11 @@ export default function Bulk() {
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
-    link.download = `facebook_captions_${new Date().toISOString().split('T')[0]}.csv`
+    link.download = `content_studio_export_${new Date().toISOString().split('T')[0]}.csv`
     link.click()
     URL.revokeObjectURL(url)
+    
+    alert(`📋 Exported ${imagesWithUrls.length} images to Content Studio CSV format!`);
   }
 
   const generateCanvas = (text: string, background: any, canvasId: string) => {
@@ -346,6 +397,15 @@ export default function Bulk() {
           </div>
         </div>
 
+        {/* Debug Notice */}
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+          <h4 className="font-medium text-yellow-800 mb-2">🔧 Debug Mode Active</h4>
+          <p className="text-sm text-yellow-700">
+            GCS upload is temporarily disabled while we debug the 500 errors. 
+            You can still generate images, download them, and export CSV with mock URLs for testing.
+          </p>
+        </div>
+
         {/* AI Texts Loaded Notice */}
         {aiTextsLoaded && (
           <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
@@ -401,7 +461,7 @@ export default function Bulk() {
               >
                 {uploading ? 
                   `⏳ Uploading ${uploadProgress.current}/${uploadProgress.total}...` : 
-                  '☁️ Upload All to Cloud'
+                  '🔧 Demo Upload (Mock URLs)'
                 }
               </button>
               
@@ -416,7 +476,7 @@ export default function Bulk() {
                 onClick={exportToCSV}
                 className="bg-gradient-to-r from-orange-500 to-red-600 text-white px-6 py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-300"
               >
-                📋 Export CSV Data
+                📋 Export Content Studio CSV
               </button>
             </div>
 
@@ -435,6 +495,11 @@ export default function Bulk() {
                   <div className="text-xs text-blue-600">
                     {img.suggestedBackground}
                   </div>
+                  {img.gcsUrl && (
+                    <div className="text-xs text-green-600 mt-1">
+                      ✅ Mock URL Ready
+                    </div>
+                  )}
                 </div>
               ))}
               {generatedImages.length > 8 && (

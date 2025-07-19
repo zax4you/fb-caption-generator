@@ -26,6 +26,9 @@ const EnhancedAICaptionGenerator = () => {
   const [contentHistory, setContentHistory] = useState([]);
   const [duplicateWarnings, setDuplicateWarnings] = useState([]);
 
+  // ✅ NEW: Dynamic pages from dashboard
+  const [pageProfiles, setPageProfiles] = useState({});
+
   // Load data from localStorage on mount
   useEffect(() => {
     const savedApiKey = localStorage.getItem('openrouter_api_key');
@@ -36,7 +39,130 @@ const EnhancedAICaptionGenerator = () => {
 
     const savedHistory = localStorage.getItem('content_history');
     if (savedHistory) setContentHistory(JSON.parse(savedHistory));
+
+    // ✅ LOAD PAGES FROM DASHBOARD
+    loadPagesFromDashboard();
+
+    // ✅ PARSE URL PARAMETERS FROM CATEGORY GENERATOR
+    parseUrlParameters();
   }, []);
+
+  // ✅ LOAD DASHBOARD PAGES
+  const loadPagesFromDashboard = () => {
+    const defaultPages = {
+      'momix-famille': {
+        name: 'Momix en Famille',
+        language: 'French',
+        niche: 'Family & Parenting',
+        audience: 'French adults 35-55, family-oriented',
+        demographics: '84.5% France, 68% ages 35-54, balanced gender',
+        tone: 'Warm, authentic, relatable',
+        peakTimes: 'Tuesday-Thursday, consistent all week',
+        topPerformers: 'Text-on-image posts (95%), emotional stories, family wisdom',
+        engagementData: '289% increase with multi-line emotional content'
+      },
+      'english-motivation': {
+        name: 'English Motivation',
+        language: 'English',
+        niche: 'Motivation & Success',
+        audience: 'English speakers 25-45, ambitious',
+        demographics: 'Global English, career-focused',
+        tone: 'Inspiring, direct, powerful',
+        peakTimes: 'Monday mornings, Wednesday evenings',
+        topPerformers: 'Success stories, quotes, transformation posts',
+        engagementData: 'High engagement with personal stories and calls-to-action'
+      }
+    };
+
+    // Load dashboard pages
+    const savedPages = localStorage.getItem('facebook_pages');
+    if (savedPages) {
+      try {
+        const dashboardPages = JSON.parse(savedPages);
+        const convertedPages = {};
+        
+        // Convert dashboard pages to AI generator format
+        dashboardPages.forEach(page => {
+          convertedPages[page.id] = {
+            name: page.name,
+            language: page.settings?.language || 'French',
+            niche: page.niche || 'General',
+            audience: page.audience || 'General audience',
+            demographics: `Language: ${page.settings?.language || 'French'}`,
+            tone: page.tone || 'Authentic',
+            peakTimes: page.settings?.postingTimes?.join(', ') || 'Various times',
+            topPerformers: 'Dynamic content based on page performance',
+            engagementData: `Avg engagement: ${page.performance?.avgEngagement || 'Not tracked yet'}`
+          };
+        });
+
+        // Merge with defaults
+        setPageProfiles({ ...defaultPages, ...convertedPages });
+      } catch (error) {
+        console.error('Error loading dashboard pages:', error);
+        setPageProfiles(defaultPages);
+      }
+    } else {
+      setPageProfiles(defaultPages);
+    }
+  };
+
+  // ✅ PARSE URL PARAMETERS FROM CATEGORY
+  const parseUrlParameters = () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const categoryParam = urlParams.get('category');
+    
+    if (categoryParam) {
+      try {
+        const categoryData = JSON.parse(decodeURIComponent(categoryParam));
+        
+        // Set the topic
+        if (categoryData.topic) {
+          setCustomTopic(categoryData.topic);
+        }
+        
+        // Set formulas if available
+        if (categoryData.formulas && Array.isArray(categoryData.formulas)) {
+          // Convert formula names to the format used in AI generator
+          const convertedFormulas = categoryData.formulas.map(formula => {
+            switch (formula) {
+              case 'AGE_PROGRESSION': return 'age_progression';
+              case 'BEFORE_AFTER': return 'before_after';
+              case 'NOBODY_TELLS_YOU': return 'revelation';
+              case 'FAMILY_REALITY': return 'confession';
+              default: return formula.toLowerCase().replace(/_/g, '_');
+            }
+          });
+          setSelectedFormulas(convertedFormulas);
+          setUsePromptRotation(true);
+        }
+        
+        // Set category based on emotion
+        if (categoryData.emotion) {
+          switch (categoryData.emotion) {
+            case 'relatable':
+              setSelectedCategory('family-relationships');
+              break;
+            case 'humorous':
+              setSelectedCategory('humor-social');
+              break;
+            case 'nostalgic':
+              setSelectedCategory('nostalgia-memory');
+              break;
+            case 'inspiring':
+              setSelectedCategory('motivation-success');
+              break;
+            default:
+              setSelectedCategory('family-relationships');
+          }
+        }
+        
+        console.log('✅ Category data loaded:', categoryData);
+      } catch (error) {
+        console.error('Error parsing category data:', error);
+      }
+    }
+  };
 
   // ✅ FEATURE 1: VIRAL FORMULAS FOR PROMPT ROTATION
   const viralFormulas = {
@@ -121,32 +247,6 @@ Moi le soir: [réalité fatiguée mais drôle]
 [Conclusion sur la réalité parentale]
 
 Montre l'évolution de l'énergie parentale sur une journée.`
-    }
-  };
-
-  // Page profiles
-  const pageProfiles = {
-    'momix-famille': {
-      name: 'Momix en Famille',
-      language: 'French',
-      niche: 'Family & Parenting',
-      audience: 'French adults 35-55, family-oriented',
-      demographics: '84.5% France, 68% ages 35-54, balanced gender',
-      tone: 'Warm, authentic, relatable',
-      peakTimes: 'Tuesday-Thursday, consistent all week',
-      topPerformers: 'Text-on-image posts (95%), emotional stories, family wisdom',
-      engagementData: '289% increase with multi-line emotional content'
-    },
-    'english-motivation': {
-      name: 'English Motivation',
-      language: 'English',
-      niche: 'Motivation & Success',
-      audience: 'English speakers 25-45, ambitious',
-      demographics: 'Global English, career-focused',
-      tone: 'Inspiring, direct, powerful',
-      peakTimes: 'Monday mornings, Wednesday evenings',
-      topPerformers: 'Success stories, quotes, transformation posts',
-      engagementData: 'High engagement with personal stories and calls-to-action'
     }
   };
 
@@ -291,6 +391,11 @@ Montre l'évolution de l'énergie parentale sur une journée.`
   const getEnhancedViralPrompt = (pageId, categoryId, topic = '', quantity) => {
     const page = pageProfiles[pageId];
     const category = categories[categoryId];
+    
+    if (!page) {
+      console.error('Page not found:', pageId);
+      return 'Error: Page not found';
+    }
     
     // Select formulas for rotation
     let formulas = [];
@@ -509,6 +614,16 @@ GÉNÈRE ${quantity} posts viraux en utilisant les formules sélectionnées avec
           <p className="text-lg text-gray-600">
             Smart viral captions with rotation, tracking & duplicate detection
           </p>
+          
+          {/* URL Parameters Notice */}
+          {customTopic && (
+            <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <p className="text-sm text-blue-700">
+                ✅ <strong>Category data loaded:</strong> Topic "{customTopic}" 
+                {selectedFormulas.length > 0 && ` with ${selectedFormulas.length} selected formulas`}
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Smart Features Status Bar */}
@@ -525,6 +640,10 @@ GÉNÈRE ${quantity} posts viraux en utilisant les formules sélectionnées avec
             <div className="px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
               <TrendingUp className="w-4 h-4 inline mr-1" />
               Content History: {contentHistory.length}
+            </div>
+            <div className="px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+              <Globe className="w-4 h-4 inline mr-1" />
+              Pages: {Object.keys(pageProfiles).length}
             </div>
           </div>
         </div>
@@ -747,7 +866,7 @@ GÉNÈRE ${quantity} posts viraux en utilisant les formules sélectionnées avec
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   <Globe className="w-4 h-4 inline mr-1" />
-                  Page Profile
+                  Page Profile ({Object.keys(pageProfiles).length} pages)
                 </label>
                 <select
                   value={selectedPage}
@@ -760,6 +879,9 @@ GÉNÈRE ${quantity} posts viraux en utilisant les formules sélectionnées avec
                     </option>
                   ))}
                 </select>
+                <div className="mt-2 p-2 bg-gray-50 rounded text-xs text-gray-600">
+                  {pageProfiles[selectedPage]?.niche} • {pageProfiles[selectedPage]?.audience}
+                </div>
               </div>
 
               {/* Category Selection */}
@@ -811,7 +933,7 @@ GÉNÈRE ${quantity} posts viraux en utilisant les formules sélectionnées avec
               <div className="mb-6">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   <Lightbulb className="w-4 h-4 inline mr-1" />
-                  Custom Topic (Optional)
+                  Custom Topic {customTopic && <span className="text-green-600">✓ Loaded</span>}
                 </label>
                 <input
                   type="text"
@@ -903,6 +1025,13 @@ GÉNÈRE ${quantity} posts viraux en utilisant les formules sélectionnées avec
                   <Brain className="w-16 h-16 mx-auto mb-4 text-gray-300" />
                   <p className="text-lg">Configure settings and generate smart viral captions</p>
                   <p className="text-sm">Features: Formula rotation, duplicate detection, performance tracking</p>
+                  {customTopic && (
+                    <div className="mt-4 bg-blue-50 rounded-lg p-3">
+                      <p className="text-blue-700 text-sm">
+                        Ready to generate content for: <strong>{customTopic}</strong>
+                      </p>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <>

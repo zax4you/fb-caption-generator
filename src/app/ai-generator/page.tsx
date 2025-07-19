@@ -143,6 +143,9 @@ const AICaptionGenerator = () => {
 // Update the getViralPrompt function in your AI generator
 // Replace the example formats section with better spacing:
 
+// 🌙 TONIGHT: Update your AI prompts with these enhanced viral formulas
+// Replace the exampleFormats section in your getViralPrompt function:
+
 if (categoryId === 'mixed-viral') {
   categoryPrompt = `Generate a MIX of all content types for maximum variety:
 - Family & Relationships (parent struggles, marriage wisdom)
@@ -154,99 +157,247 @@ if (categoryId === 'mixed-viral') {
 Distribute evenly across all categories.`;
 
   exampleFormats = `
-EXAMPLE FORMATS (with proper spacing between lines):
+PROVEN VIRAL FORMATS (use these exact structures):
 
-Format 1 - Age Revelation:
-À 40 ans, j'ai compris
+Format 1 - Age Progression Series:
+À 20 ans: Je vais changer le monde
 
-Nos parents avaient raison sur TOUT
+À 30 ans: Je vais changer mon travail
 
-Mais on était trop fiers pour l'admettre
+À 40 ans: Je vais changer mes habitudes
 
-Format 2 - Wisdom Statement:
+À 50 ans: Finalement, je me change moi
+
+Format 2 - Reality Check:
+Avant d'être parent: Je ne comprenais pas pourquoi les gens étaient si fatigués
+
+Maintenant: 'Bonjour' à 6h du matin me semble être une agression personnelle
+
+Format 3 - Multiple Perspectives:
+Les enfants: Papa, tu peux nous aider?
+
+Moi à 7h: Bien sûr, avec plaisir!
+
+Moi à 20h: Demandez à Google
+
+Format 4 - Revelation Pattern:
+À 45 ans, j'ai enfin compris
+
+Pourquoi ma mère me disait toujours de ranger ma chambre
+
+Ce n'était pas pour la chambre
+
+C'était pour m'apprendre la discipline
+
+Format 5 - Nostalgia Hook:
+Qui se souvient quand on devait attendre 20h pour voir notre série préférée
+
+Pas de replay, pas de pause
+
+Si tu ratais un épisode, tu étais perdu pour toujours
+
+Format 6 - Marriage/Relationship Truth:
 20 ans de mariage m'ont appris
 
-L'amour, ce n'est pas les papillons dans le ventre
+L'amour, ce n'est pas de ne jamais se disputer
 
-C'est rester quand il n'y en a plus
+C'est de se réconcilier à chaque fois
 
-Format 3 - Nostalgic Reflection:
-Qui se souvient des appels téléphoniques à heure fixe
+Format 7 - Parent Reality:
+Mes enfants croient que je sais tout
 
-Des cassettes qu'il fallait rembobiner
+En réalité, je googlelise discrètement
 
-Du stress quand on ratait son émission`;
+Depuis 15 ans`;
 } else {
+  // Category-specific enhanced examples
   categoryPrompt = `CATEGORY: ${category.name} - ${category.description}`;
   
   if (categoryId === 'family-relationships') {
     exampleFormats = `
-FAMILY & RELATIONSHIPS EXAMPLES:
+FAMILY & RELATIONSHIPS - PROVEN VIRAL EXAMPLES:
+
+Example 1 - Parent Evolution:
+Avant mes enfants: Les parents qui crient sont de mauvais parents
+
+Maintenant: 'ARRÊTEZ DE COURIR DANS LA MAISON!'
+
+Je me suis excusée auprès de ma mère
+
+Example 2 - Marriage Reality:
+Mon mari: Tu veux qu'on regarde quoi ce soir?
+
+Moi: N'importe quoi
+
+Lui: *Met un film d'action*
+
+Moi: Pas ça
+
+Nous, tous les soirs depuis 15 ans
+
+Example 3 - Generation Gap:
+Mes parents à mon âge: Maison, 2 enfants, voiture neuve
+
+Moi au même âge: Je partage un Netflix avec 4 personnes
+
+Et je trouve ça déjà bien
+
+Example 4 - Family Truth:
 À 40 ans, j'ai compris
 
-Nos parents avaient raison sur TOUT
+Mes parents n'avaient pas toutes les réponses
 
-Mais on était trop fiers pour l'admettre
+Ils improvisaient autant que moi
 
----
-
-Mes enfants: Maman, tu fais comment
-
-Moi: Attends, je googlelise
-
-La technologie a tout changé`;
+Mais ils le cachaient mieux`;
   } else if (categoryId === 'life-wisdom') {
     exampleFormats = `
-LIFE WISDOM EXAMPLES:
-Personne ne m'avait dit qu'à 45 ans
+LIFE WISDOM - PROVEN VIRAL EXAMPLES:
 
-Je serais encore en train de chercher ma voie
+Example 1 - Age Revelation:
+À 35 ans: Je pensais avoir tout compris
 
-Et que c'est complètement normal
+À 45 ans: Je réalise que je ne sais rien
 
----
+À 55 ans: J'accepte enfin de ne pas savoir
 
+Et c'est libérateur
+
+Example 2 - Money Truth:
 J'ai mis 30 ans à comprendre
 
 L'argent ne fait pas le bonheur
 
-Mais l'absence d'argent fait le malheur`;
+Mais l'absence d'argent fait le malheur
+
+Nuance importante
+
+Example 3 - Career Reality:
+Travailler dur ne garantit pas le succès
+
+Travailler intelligemment non plus
+
+Parfois, c'est juste une question de timing
+
+Et un peu de chance
+
+Example 4 - Life Priority:
+À 20 ans: Je veux être riche
+
+À 30 ans: Je veux être reconnu
+
+À 40 ans: Je veux juste dormir 8h d'affilée
+
+Les priorités changent`;
+  } else if (categoryId === 'nostalgia-memory') {
+    exampleFormats = `
+NOSTALGIA & MEMORY - PROVEN VIRAL EXAMPLES:
+
+Example 1 - Technology Evolution:
+Se souvenir quand:
+
+On devait se lever pour changer de chaîne
+
+Le téléphone était attaché au mur
+
+Internet faisait du bruit en se connectant
+
+Example 2 - Childhood Memories:
+Les étés de notre enfance duraient 3 mois
+
+Maintenant, les vacances passent en 3 jours
+
+Soit le temps a accéléré
+
+Soit on a perdu la magie
+
+Example 3 - Social Evolution:
+Avant: On se donnait rendez-vous et on y était
+
+Maintenant: 'Je suis en route' peut vouloir dire 'Je commence à me préparer'
+
+La ponctualité, c'était mieux avant
+
+Example 4 - Communication Change:
+À l'époque: On appelait pour dire qu'on était bien arrivé
+
+Maintenant: On envoie sa localisation en temps réel
+
+Mais on se parle moins`;
+  } else if (categoryId === 'humor-social') {
+    exampleFormats = `
+HUMOR & SOCIAL COMMENTARY - PROVEN VIRAL EXAMPLES:
+
+Example 1 - Modern Parenting:
+Avant: 'Va jouer dehors!'
+
+Maintenant: 'Mets ta crème solaire, ton casque, tes genouillères, prends ton portable et reste où je peux te voir'
+
+L'époque a changé
+
+Example 2 - Technology Struggle:
+Mes enfants: 'Papa, tu fais comment pour ça?'
+
+Moi: 'Attends, je googlelise...'
+
+Eux: *Roulent des yeux*
+
+Moi, fier de ma technique de recherche
+
+Example 3 - Shopping Evolution:
+Avant: On faisait les courses une fois par semaine
+
+Maintenant: Amazon Prime en 2h
+
+Mais on passe plus de temps à choisir quoi regarder sur Netflix
+
+Example 4 - Social Media Reality:
+Instagram: Ma vie est parfaite
+
+Facebook: Regardez mes enfants adorables
+
+En réalité: Je n'ai pas dormi et j'ai mangé des céréales pour le dîner`;
   } else if (categoryId === 'motivation-success') {
     exampleFormats = `
-MOTIVATION & SUCCESS EXAMPLES:
-J'ai échoué 100 fois avant mes 50 ans
+MOTIVATION & SUCCESS - PROVEN VIRAL EXAMPLES:
+
+Example 1 - Failure Reframe:
+J'ai échoué 47 fois avant mes 40 ans
 
 Puis j'ai compris
 
 Chaque échec me rapprochait du succès
 
----
+Maintenant, j'échoue plus vite
 
-À 35 ans, j'ai abandonné mon rêve
+Example 2 - Dream Evolution:
+À 25 ans: Je vais changer le monde
 
-À 45 ans, je l'ai repris
+À 35 ans: Je vais changer mon secteur
 
-Aujourd'hui, je vis de ma passion`;
-  } else if (categoryId === 'nostalgia-memory') {
-    exampleFormats = `
-NOSTALGIA & MEMORY EXAMPLES:
-Il y a 20 ans, je me disais
+À 45 ans: Si je peux changer ma famille, c'est déjà bien
 
-À 40 ans, j'aurai tout compris
+Les rêves s'ajustent
 
-Spoiler alert: Je comprends encore moins qu'avant`;
-  } else if (categoryId === 'humor-social') {
-    exampleFormats = `
-HUMOR & SOCIAL COMMENTARY EXAMPLES:
-Avant: Va jouer dehors
+Example 3 - Success Definition:
+Le succès, ce n'est pas d'avoir tout
 
-Maintenant: Mets ta crème solaire, ton casque, tes genouillères et ton portable avec le GPS activé
+C'est de ne plus avoir envie de tout avoir
 
-Les temps changent`;
+J'ai mis 40 ans à le comprendre
+
+Example 4 - Career Truth:
+Personne ne m'avait dit qu'à 45 ans
+
+Je changerais encore de voie
+
+Et que c'est normal
+
+La vie n'est pas linéaire`;
   }
 }
 
-// And update the main prompt instructions:
+// Enhanced base prompt with viral psychology
 const basePrompt = `You are creating VIRAL FACEBOOK CAPTIONS for ${page.name}, a ${page.niche} page.
 
 PROVEN SUCCESS DATA:
@@ -256,22 +407,27 @@ PROVEN SUCCESS DATA:
 - Language: ${page.language}
 - Tone: ${page.tone}
 
+VIRAL PSYCHOLOGY RULES (MANDATORY):
+1. RELATABILITY: Use experiences 85% of your audience has had
+2. SURPRISE TWIST: Start with common belief, end with unexpected truth  
+3. VULNERABILITY: Admit imperfections or failures
+4. GENERATIONAL BRIDGE: Connect different age perspectives
+5. UNIVERSAL TRUTH: Something everyone knows but rarely says out loud
+
+FORBIDDEN ELEMENTS:
+- Generic motivational quotes
+- Preachy advice  
+- Perfect scenarios
+- Unrealistic expectations
+- Overly positive content without struggle
+
 VIRAL CAPTION STRUCTURE (MANDATORY):
-Each caption MUST follow this 3-part structure:
+Each caption MUST follow this structure:
 
-1. HOOK (1-2 lines): Age-specific opener that creates immediate curiosity
-   - "À [age] ans, j'ai compris..."
-   - "Personne ne m'avait dit qu'à [age] ans..."
-   - "[Number] ans de [experience] m'ont appris:"
-
-2. REVELATION/STORY (2-4 lines): The main insight or story
-   - Personal vulnerability or universal truth
-   - Emotional connection with the audience
-   - Relatable life experience
-
-3. VALIDATION/EXPANSION (1-2 lines): Reinforce the message
-   - Add depth or make it more relatable
-   - End with a natural, thoughtful conclusion
+1. HOOK (1 line): Age-specific opener or situation setup
+2. STORY/CONTRAST (2-3 lines): The revelation, comparison, or reality
+3. TWIST/TRUTH (1 line): The unexpected insight or honest admission
+4. RESOLUTION (1 line): Natural conclusion that feels complete
 
 ${categoryPrompt}
 ${topic ? `SPECIFIC TOPIC: ${topic}` : ''}
@@ -280,44 +436,38 @@ ${exampleFormats}
 
 CONTENT REQUIREMENTS:
 - Generate ${quantity} complete viral captions
-- Each caption should be 4-6 lines long
-- IMPORTANT: Add empty line breaks between each thought/line for better readability
+- Each caption should be 4-6 lines with empty lines between thoughts
+- Use PROVEN viral formulas from examples above
 - NO call-to-action requests (no "Tag quelqu'un", "Commentez", etc.)
 - NO emojis or special characters
 - Age references should target ${page.audience}
-- Use PLAIN TEXT ONLY - no markdown formatting (**, *, etc.)
-- Each line should be a complete thought followed by an empty line
+- Use PLAIN TEXT ONLY - no markdown formatting
+- Focus on ANTI-PERFECT content (struggles, not solutions)
 
-SPACING FORMAT (CRITICAL):
-Each caption should look like this:
-Line 1 (Hook)
+FRENCH CULTURAL SPECIFICITY:
+- Reference French family dynamics
+- Use French generational experiences
+- Include French cultural touchstones (TV shows, social norms)
+- Acknowledge French parenting/marriage realities
 
-Line 2 (Story part 1)
-
-Line 3 (Story part 2)
-
-Line 4 (Conclusion)
-
-PSYCHOLOGICAL TRIGGERS TO INCLUDE:
-- Nostalgia and time passage
-- Age-specific revelations
-- Family and relationship dynamics
-- Universal life struggles
-- Vulnerability and authenticity
+EMOTIONAL TRIGGER WORDS TO USE:
+- "En réalité", "La vérité c'est que", "Personne ne le dit mais"
+- "J'ai mis X ans à comprendre", "À X ans, j'ai réalisé"
+- "Avant/Maintenant", "À l'époque/Aujourd'hui"
 
 FORMAT YOUR RESPONSE EXACTLY AS:
 
 CAPTION 1:
-[Multi-line caption with empty lines between each thought]
+[Multi-line caption with empty lines between thoughts, following proven viral formulas]
 BACKGROUND: [suggested background color]
 
 CAPTION 2:
-[Multi-line caption with empty lines between each thought]
+[Multi-line caption with empty lines between thoughts, following proven viral formulas]  
 BACKGROUND: [suggested background color]
 
 Continue for all ${quantity} captions.
 
-Make each caption emotionally powerful and naturally shareable with proper visual spacing for Facebook images.`;
+Make each caption emotionally powerful using proven viral psychology and authentic French cultural experiences.`;
 
     return basePrompt;
   };

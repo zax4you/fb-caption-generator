@@ -1,4 +1,4 @@
-// COMPLETE AI Generator with Clean Captions Feature
+// COMPLETE AI Generator with Clean Captions Feature + French Typography Fix
 // Replace your entire /src/app/ai-generator/page.tsx file with this
 
 'use client'
@@ -114,7 +114,7 @@ const AICaptionGenerator = () => {
     }
   };
 
-  // ✅ ENHANCED: Super aggressive text cleaning
+  // ✅ ENHANCED: Super aggressive text cleaning WITH FRENCH TYPOGRAPHY FIX
   const cleanText = (text) => {
     return text
       .replace(/^\*\*\s*/, '')                    // Remove ** at beginning
@@ -128,11 +128,17 @@ const AICaptionGenerator = () => {
       .replace(/^\s*\d+\.\s*/gm, '')              // Remove numbers
       .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')    // Convert links to text
       
+      // ✅ FIX FRENCH TYPOGRAPHY - CORRECTION PRINCIPALE POUR LES APOSTROPHES !
+      .replace(/'/g, "'")                         // Replace straight apostrophes with French apostrophes
+      .replace(/'/g, "'")                         // Replace any other straight apostrophes
+      .replace(/"/g, '"')                         // Fix opening quotes (optional)
+      .replace(/"/g, '"')                         // Fix closing quotes (optional)
+      
       // ✅ REMOVE ALL CTAs (comprehensive list)
       .replace(/Tag\s+[^.!?\n]*[.!?\n]/gi, '')
       .replace(/Commentez\s+[^.!?\n]*[.!?\n]/gi, '')
       .replace(/Partagez\s+[^.!?\n]*[.!?\n]/gi, '')
-      .replace(/Qui\s+est\s+d'accord[^.!?\n]*[.!?\n]/gi, '')
+      .replace(/Qui\s+est\s+d['']accord[^.!?\n]*[.!?\n]/gi, '')  // Note: handles both ' and '
       .replace(/Likez\s+[^.!?\n]*[.!?\n]/gi, '')
       .replace(/Suivez\s+[^.!?\n]*[.!?\n]/gi, '')
       .replace(/Abonnez-vous[^.!?\n]*[.!?\n]/gi, '')
@@ -143,7 +149,7 @@ const AICaptionGenerator = () => {
       .replace(/🤗|🌟|💕|👇|🔥|✨|💰|📱|❤️|💯|😅|🤔|💙|👨‍👩‍👧‍👦|🧠|⚡|💭|😂|🎯|🚀|💪|🙌|👏|💜|🖤|💚|💛|🧡|❤️‍🔥|💖|💝|💗|💓|💘|💋|👀|🤯|😍|🥰|😘|😊|😄|😃|😂|🤣|😆|😁|🙂|🙃|😉|😇|🥺|😢|😭|😤|😠|😡|🤬|🤢|🤮|🤧|😷|🤒|🤕|🤠|🤡|🤥|🤓|😎|🧐|🤨|😐|😑|😶|😏|😒|🙄|😬|🤐|🤫|🤭|😯|😦|😧|😮|😲|🥱|😴|🤤|😪|😵|🤐|🥴|🤢|🤮|🤧|😷|🤒|🤕|🤑|🤠|😈|👿|👹|👺|🤡|💩|👻|💀|☠️|👽|👾|🤖|🎃|😺|😸|😹|😻|😼|😽|🙀|😿|😾/g, '')
       
       // ✅ CLEAN FORMATTING
-      .replace(/["""'']/g, '')                    // Remove smart quotes
+      .replace(/["""'']/g, '')                    // Remove smart quotes (except the ones we want)
       .replace(/\s{3,}/g, '\n\n')                 // Convert multiple spaces to double line break
       .replace(/\n{3,}/g, '\n\n')                 // Limit line breaks to maximum 2
       .replace(/^\s+|\s+$/g, '')                  // Trim whitespace at start/end
@@ -170,7 +176,7 @@ const AICaptionGenerator = () => {
     // Show success message
     setTimeout(() => {
       setIsCleaningCaptions(false);
-      alert(`✅ Cleaned ${cleanedContent.length} captions!\n\nRemoved: markdown, emojis, CTAs, and formatting issues.`);
+      alert(`✅ Cleaned ${cleanedContent.length} captions!\n\nRemoved: markdown, emojis, CTAs, and formatting issues.\nFixed: French apostrophes and typography.`);
     }, 1000);
   };
 
@@ -189,7 +195,7 @@ const AICaptionGenerator = () => {
     setGeneratedContent(updatedContent);
   };
 
-  // ✅ COMPLETELY NEW: Enhanced viral prompt
+  // ✅ ENHANCED: Viral prompt with French typography instructions
   const getViralPrompt = (pageId, categoryId, topic = '', quantity) => {
     const page = pageProfiles[pageId];
     
@@ -243,26 +249,33 @@ Se souvenir quand:
 
 [Réflexion sur le changement]
 
-RÈGLES STRICTES:
+RÈGLES STRICTES POUR LA TYPOGRAPHIE FRANÇAISE:
+- UTILISE TOUJOURS les apostrophes françaises ' au lieu de '
+- Exemples: "j'ai" pas "j'ai", "d'être" pas "d'être", "l'amour" pas "l'amour"
 - AUCUN appel à l'action (Tag, Commentez, Partagez)
 - AUCUN emoji ou symbole
 - AUCUN formatage markdown (**, *)
-- Seulement du texte français naturel
+- Seulement du texte français naturel avec la BONNE TYPOGRAPHIE
 - Ligne vide entre chaque pensée
 - Expériences spécifiquement françaises
 - Vulnérabilité et imperfections, pas de perfection
 - 4-6 lignes maximum par caption
 
-GÉNÈRE ${quantity} posts en utilisant les formules ci-dessus.
+EXEMPLES AVEC BONNE TYPOGRAPHIE:
+"À 40 ans, j'ai compris que nos parents avaient raison"
+"L'amour, ce n'est pas ce qu'on croit"
+"J'étais persuadée d'avoir tout compris"
+
+GÉNÈRE ${quantity} posts en utilisant les formules ci-dessus avec la TYPOGRAPHIE FRANÇAISE CORRECTE.
 
 FORMAT DE RÉPONSE:
 
 CAPTION 1:
-[Texte avec lignes vides entre les pensées]
+[Texte avec lignes vides entre les pensées ET apostrophes françaises correctes]
 BACKGROUND: [couleur suggérée]
 
 CAPTION 2:
-[Texte avec lignes vides entre les pensées]
+[Texte avec lignes vides entre les pensées ET apostrophes françaises correctes]
 BACKGROUND: [couleur suggérée]
 
 Continue pour tous les ${quantity} posts.`;
@@ -394,7 +407,7 @@ Continue pour tous les ${quantity} posts.`;
             🤖 AI Viral Caption Generator
           </h1>
           <p className="text-lg text-gray-600">
-            Multi-line viral captions for maximum Performance Program earnings
+            Multi-line viral captions with perfect French typography
           </p>
         </div>
 
@@ -622,15 +635,15 @@ Continue pour tous les ${quantity} posts.`;
                 <div className="text-center py-12 text-gray-500">
                   <Wand2 className="w-16 h-16 mx-auto mb-4 text-gray-300" />
                   <p className="text-lg">Configure your settings and generate viral captions</p>
-                  <p className="text-sm">Multi-line captions based on 289% engagement research</p>
+                  <p className="text-sm">Multi-line captions with perfect French typography</p>
                 </div>
               ) : (
                 <>
-                  {/* ✅ NEW: Clean Captions Section */}
+                  {/* ✅ ENHANCED: Clean Captions Section with French Typography */}
                   <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-6">
-                    <h3 className="text-lg font-bold text-orange-800 mb-2">🧹 Caption Cleaning</h3>
+                    <h3 className="text-lg font-bold text-orange-800 mb-2">🧹 Caption Cleaning & French Typography</h3>
                     <p className="text-sm text-orange-700 mb-4">
-                      Use this failsafe to clean any remaining formatting issues, CTAs, or emojis before generating images.
+                      Use this failsafe to clean formatting issues and fix French apostrophes before generating images.
                     </p>
                     
                     <div className="flex gap-3 flex-wrap">
@@ -655,7 +668,7 @@ Continue pour tous les ${quantity} posts.`;
                       </button>
                       
                       <div className="text-xs text-orange-600 flex items-center">
-                        <strong>Removes:</strong> **, *, emojis, "Tag quelqu'un", "Commentez", "Partagez", etc.
+                        <strong>Removes:</strong> **, *, emojis, CTAs + <strong>Fixes:</strong> French apostrophes (j'ai → j'ai)
                       </div>
                     </div>
                   </div>
@@ -676,7 +689,7 @@ Continue pour tous les ${quantity} posts.`;
                               {aiModels[selectedModel]?.name}
                             </span>
                             
-                            {/* ✅ NEW: Content Quality Indicators */}
+                            {/* ✅ ENHANCED: Quality Indicators including French Typography */}
                             <div className="flex gap-1">
                               {content.text.includes('**') && (
                                 <span className="bg-red-100 text-red-600 px-2 py-1 rounded text-xs">Markdown</span>
@@ -687,6 +700,9 @@ Continue pour tous les ${quantity} posts.`;
                               {/Tag\s+|Commentez\s+|Partagez\s+/i.test(content.text) && (
                                 <span className="bg-red-100 text-red-600 px-2 py-1 rounded text-xs">CTA</span>
                               )}
+                              {/'/g.test(content.text) && (
+                                <span className="bg-yellow-100 text-yellow-600 px-2 py-1 rounded text-xs">Apostrophes</span>
+                              )}
                             </div>
                           </div>
                           
@@ -695,7 +711,7 @@ Continue pour tous les ${quantity} posts.`;
                             <button
                               onClick={() => cleanSingleCaption(content.id)}
                               className="p-2 text-orange-500 hover:text-orange-700 transition-colors"
-                              title="Clean this caption"
+                              title="Clean this caption & fix French typography"
                             >
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -747,7 +763,7 @@ Continue pour tous les ${quantity} posts.`;
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
                       <h4 className="font-medium text-blue-800 mb-2">📸 Ready for Image Generation?</h4>
                       <p className="text-sm text-blue-700">
-                        Make sure to clean your captions first if they contain any formatting issues.
+                        Make sure to clean your captions first to fix French typography and remove formatting issues.
                         Then send them to the bulk generator to create images.
                       </p>
                     </div>
@@ -760,7 +776,7 @@ Continue pour tous les ${quantity} posts.`;
                       Send All to Bulk Generator →
                     </button>
                     <p className="text-sm text-gray-500 mt-2">
-                      Generate images for all {generatedContent.length} texts at once
+                      Generate images for all {generatedContent.length} texts with perfect French typography
                     </p>
                   </div>
                   
@@ -782,26 +798,31 @@ Continue pour tous les ${quantity} posts.`;
 
         {/* Integration Info */}
         <div className="mt-8 bg-gradient-to-r from-blue-100 to-purple-100 rounded-2xl p-6">
-          <h3 className="text-lg font-bold text-gray-800 mb-2">🔗 AI → Bulk Generator Workflow</h3>
-          <div className="grid md:grid-cols-3 gap-4 text-center">
+          <h3 className="text-lg font-bold text-gray-800 mb-2">🔗 AI → Clean → Bulk Generator Workflow</h3>
+          <div className="grid md:grid-cols-4 gap-4 text-center">
             <div className="bg-white rounded-lg p-4">
               <div className="text-2xl mb-2">🤖</div>
               <div className="font-bold text-gray-800">1. Generate Viral Captions</div>
               <div className="text-sm text-gray-600">Create multi-line captions with research-backed viral formulas</div>
             </div>
             <div className="bg-white rounded-lg p-4">
+              <div className="text-2xl mb-2">🇫🇷</div>
+              <div className="font-bold text-gray-800">2. Fix French Typography</div>
+              <div className="text-sm text-gray-600">Convert straight apostrophes to French apostrophes automatically</div>
+            </div>
+            <div className="bg-white rounded-lg p-4">
               <div className="text-2xl mb-2">🧹</div>
-              <div className="font-bold text-gray-800">2. Clean Captions</div>
+              <div className="font-bold text-gray-800">3. Clean Captions</div>
               <div className="text-sm text-gray-600">Remove formatting issues, CTAs, and emojis with one click</div>
             </div>
             <div className="bg-white rounded-lg p-4">
               <div className="text-2xl mb-2">📸</div>
-              <div className="font-bold text-gray-800">3. Generate Images</div>
-              <div className="text-sm text-gray-600">Create Facebook-style images with optimal backgrounds</div>
+              <div className="font-bold text-gray-800">4. Generate Images</div>
+              <div className="text-sm text-gray-600">Create Facebook-style images with perfect typography</div>
             </div>
           </div>
           <p className="text-sm text-gray-600 mt-4 text-center">
-            Complete viral content pipeline: AI captions → Clean captions → Bulk generation → GCS upload → Content Studio export → Facebook posts → Performance Program earnings! 💰
+            Complete viral content pipeline: AI captions → Fix French typography → Clean captions → Bulk generation → GCS upload → Content Studio export → Facebook posts → Performance Program earnings! 💰🇫🇷
           </p>
         </div>
       </div>

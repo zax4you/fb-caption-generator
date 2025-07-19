@@ -1,5 +1,7 @@
+'use client'
+
 import React, { useState } from 'react';
-import { Wand2, Copy, RefreshCw, Settings, Target, Globe, Brain, Zap, Check } from 'lucide-react';
+import { Wand2, Copy, RefreshCw, Settings, Target, Globe, Brain, Zap, Check, Lightbulb } from 'lucide-react';
 
 const AICaptionGenerator = () => {
   const [selectedPage, setSelectedPage] = useState('momix-famille');
@@ -8,7 +10,8 @@ const AICaptionGenerator = () => {
   const [quantity, setQuantity] = useState(5);
   const [generatedContent, setGeneratedContent] = useState([]);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [apiKey, setApiKey] = useState('');  const [showSettings, setShowSettings] = useState(false);
+  const [apiKey, setApiKey] = useState(''); // 🔒 SECURE: Empty by default
+  const [showSettings, setShowSettings] = useState(false);
   const [copiedIndex, setCopiedIndex] = useState(null);
 
   // Page profiles based on your research
@@ -54,13 +57,18 @@ const AICaptionGenerator = () => {
     },
     'nostalgia-memory': {
       name: '💭 Nostalgia & Memory',
-      description: 'Childhood memories, time passage, \"remember when\"',
+      description: 'Childhood memories, time passage, "remember when"',
       backgrounds: ['Purple-Pink', 'Cyan-Purple', 'Pink-Blue']
     },
     'humor-social': {
       name: '😂 Humor & Social Commentary',
       description: 'Technology struggles, modern parenting, generational gaps',
       backgrounds: ['Pink-Red', 'Pink-Blue', 'Yellow-Pink']
+    },
+    'mixed-viral': {
+      name: '🔥 Mixed Viral Content',
+      description: 'Combination of all categories for maximum variety',
+      backgrounds: ['All backgrounds randomly assigned']
     }
   };
 
@@ -230,6 +238,25 @@ Make each text emotionally powerful, relatable to ${page.audience}, and perfect 
           </p>
         </div>
 
+        {/* API Key Required Notice */}
+        {!apiKey && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+            <h4 className="font-medium text-yellow-800 mb-2">🔑 API Key Required</h4>
+            <p className="text-sm text-yellow-700 mb-2">
+              To use the AI generator, you need an OpenRouter API key:
+            </p>
+            <ol className="text-sm text-yellow-700 list-decimal list-inside space-y-1">
+              <li>Go to <a href="https://openrouter.ai/keys" target="_blank" className="text-blue-600 underline">openrouter.ai/keys</a></li>
+              <li>Create a free account and generate an API key</li>
+              <li>Click the Settings ⚙️ button to enter your key</li>
+              <li>Start generating viral content!</li>
+            </ol>
+            <p className="text-xs text-yellow-600 mt-2">
+              💡 Your key is stored locally and never shared
+            </p>
+          </div>
+        )}
+
         {/* Settings Modal */}
         {showSettings && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -396,14 +423,14 @@ Make each text emotionally powerful, relatable to ${page.audience}, and perfect 
               </button>
 
               {!apiKey && (
-                <p className="text-xs text-red-500 mt-2 text-center">
-                  Configure API key in settings to generate captions
+                <p className="text-sm text-red-500 mt-2 text-center">
+                  Configure API key in settings to generate image texts
                 </p>
               )}
             </div>
           </div>
 
-          {/* Right Panel - Generated Captions */}
+          {/* Right Panel - Generated Content */}
           <div className="lg:col-span-2">
             <div className="bg-white rounded-2xl p-6 shadow-lg">
               <h2 className="text-xl font-bold text-gray-800 mb-6">

@@ -91,8 +91,8 @@ export default function Bulk() {
       return
     }
 
-    // TEMPORARY: Skip upload and just mark as "uploaded" for testing
-    const skipUpload = true; // Set to false when GCS is working
+    // ✅ GCS UPLOADS NOW ENABLED!
+    const skipUpload = false; // GCS permissions are working perfectly! ✅
     
     if (skipUpload) {
       console.log('🔧 DEMO MODE: Skipping actual upload, generating mock URLs');
@@ -115,7 +115,8 @@ export default function Bulk() {
       return;
     }
 
-    // Original upload code (when GCS is working)
+    // ✅ REAL GCS UPLOAD CODE (NOW ACTIVE!)
+    console.log('🚀 Starting real GCS uploads!');
     setUploading(true)
     setUploadProgress({ current: 0, total: generatedImages.length })
 
@@ -128,6 +129,8 @@ export default function Bulk() {
       try {
         setUploadProgress({ current: i + 1, total: generatedImages.length })
         
+        console.log(`📤 Uploading ${fileName} (${i + 1}/${generatedImages.length})...`);
+        
         const result = await uploadToGCS(image.dataUrl, fileName)
         
         uploadedResults.push({
@@ -137,13 +140,13 @@ export default function Bulk() {
           fileName: result.fileName
         })
         
-        console.log(`Uploaded ${fileName} successfully`)
+        console.log(`✅ Uploaded ${fileName} successfully: ${result.publicUrl}`)
         
         // Small delay to prevent overwhelming the API
         await new Promise(resolve => setTimeout(resolve, 300))
         
       } catch (error) {
-        console.error(`Failed to upload ${fileName}:`, error)
+        console.error(`❌ Failed to upload ${fileName}:`, error)
         uploadedResults.push({
           ...image,
           gcsUrl: null,
@@ -153,12 +156,20 @@ export default function Bulk() {
       }
     }
 
-    // Update the generated images with GCS URLs
+    // Update the generated images with real GCS URLs
     setGeneratedImages(uploadedResults)
     setUploading(false)
     
     const successCount = uploadedResults.filter(img => img.gcsUrl).length
-    alert(`Upload complete! ${successCount}/${uploadedResults.length} images uploaded successfully.`)
+    const failureCount = uploadedResults.length - successCount
+    
+    if (failureCount === 0) {
+      alert(`🎉 Upload complete! All ${successCount} images uploaded successfully to Google Cloud Storage!`)
+    } else {
+      alert(`⚠️ Upload complete! ${successCount}/${uploadedResults.length} images uploaded successfully. ${failureCount} failed.`)
+    }
+    
+    console.log(`📊 Upload summary: ${successCount} successful, ${failureCount} failed`);
   }
 
   const downloadAllImages = () => {
@@ -397,12 +408,11 @@ export default function Bulk() {
           </div>
         </div>
 
-        {/* Debug Notice */}
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-          <h4 className="font-medium text-yellow-800 mb-2">🔧 Debug Mode Active</h4>
-          <p className="text-sm text-yellow-700">
-            GCS upload is temporarily disabled while we debug the 500 errors. 
-            You can still generate images, download them, and export CSV with mock URLs for testing.
+        {/* Success Notice */}
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+          <h4 className="font-medium text-green-800 mb-2">✅ GCS Upload Active</h4>
+          <p className="text-sm text-green-700">
+            Google Cloud Storage is working perfectly! Generated images will be uploaded to real GCS URLs for Content Studio export.
           </p>
         </div>
 
@@ -461,7 +471,7 @@ export default function Bulk() {
               >
                 {uploading ? 
                   `⏳ Uploading ${uploadProgress.current}/${uploadProgress.total}...` : 
-                  '🔧 Demo Upload (Mock URLs)'
+                  '☁️ Upload to Google Cloud Storage'
                 }
               </button>
               
@@ -497,7 +507,7 @@ export default function Bulk() {
                   </div>
                   {img.gcsUrl && (
                     <div className="text-xs text-green-600 mt-1">
-                      ✅ Mock URL Ready
+                      ✅ Uploaded to GCS
                     </div>
                   )}
                 </div>

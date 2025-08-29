@@ -15,11 +15,11 @@ interface CanvasGeneratorProps {
 export default function CanvasGenerator({ onImageGenerated }: CanvasGeneratorProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [formData, setFormData] = useState({
-    text: `On vous offre 1 million,\nmais vous ne pourrez plus\njamais boire de café.\nPouvez-vous le faire ?`,
+    text: `The only way to do great work is to love what you do.`,
     bgColor1: '#ff1744',
     bgColor2: '#3f51b5',
     textColor: '#ffffff',
-    fontSize: 56  // Changed from 80 to 56
+    fontSize: 160  // Much bigger for Facebook native look
   })
   const [loading, setLoading] = useState(false)
 
@@ -33,9 +33,9 @@ export default function CanvasGenerator({ onImageGenerated }: CanvasGeneratorPro
     setLoading(true)
 
     try {
-      // Set canvas size for 4:5 ratio (Instagram post)
-      canvas.width = 800
-      canvas.height = 1000
+      // Set canvas size for 4:5 ratio (Instagram/Facebook optimized)
+      canvas.width = 1080
+      canvas.height = 1350
 
       // Create gradient background
       const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height)
@@ -52,86 +52,85 @@ export default function CanvasGenerator({ onImageGenerated }: CanvasGeneratorPro
       ctx.textBaseline = 'middle'
 
       // Add text shadow for better readability
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.3)'
-      ctx.shadowBlur = 10
-      ctx.shadowOffsetX = 2
-      ctx.shadowOffsetY = 2
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.4)'
+      ctx.shadowBlur = 12
+      ctx.shadowOffsetX = 3
+      ctx.shadowOffsetY = 3
 
-      // Auto-fit text logic (improved)
-      const lines = formData.text.split('\n')
-      const maxWidth = canvas.width * 0.85  // Slightly more space
-      const maxHeight = canvas.height * 0.75 // More vertical space
+      // Facebook native style - MUCH wider margins for natural line breaks
+      const paddingHorizontal = canvas.width * 0.25  // 25% padding on each side (was 7.5%)
+      const paddingVertical = canvas.height * 0.2    // 20% padding top/bottom
+      const maxWidth = canvas.width - (paddingHorizontal * 2)  // Much narrower text area
+      const maxHeight = canvas.height - (paddingVertical * 2)
       
       let fontSize = formData.fontSize
+
+      // Set initial font to measure text
+      ctx.font = `bold ${fontSize}px "Helvetica Neue", Helvetica, Arial, sans-serif`
       
-      // For long single-line text, try to break it into multiple lines first
-      if (lines.length === 1 && lines[0].length > 40) {
-        const words = lines[0].split(' ')
-        const newLines = []
-        let currentLine = ''
+      // Auto-wrap text into natural lines (Facebook style)
+      const words = formData.text.split(' ')
+      const lines = []
+      let currentLine = ''
+      
+      for (const word of words) {
+        const testLine = currentLine ? `${currentLine} ${word}` : word
+        const testWidth = ctx.measureText(testLine).width
         
-        for (const word of words) {
-          const testLine = currentLine ? `${currentLine} ${word}` : word
-          ctx.font = `bold 56px "Helvetica Neue", Helvetica, Arial, sans-serif`  // Updated font
-          
-          if (ctx.measureText(testLine).width <= maxWidth || currentLine === '') {
-            currentLine = testLine
-          } else {
-            newLines.push(currentLine)
-            currentLine = word
-          }
-        }
-        if (currentLine) {
-          newLines.push(currentLine)
-        }
-        
-        // Update lines with the wrapped version
-        if (newLines.length > 1) {
-          lines.splice(0, 1, ...newLines)
+        if (testWidth > maxWidth && currentLine !== '') {
+          lines.push(currentLine)
+          currentLine = word
+        } else {
+          currentLine = testLine
         }
       }
       
-      let lineHeight = fontSize * 1.3  // Slightly more line spacing
+      if (currentLine) {
+        lines.push(currentLine)
+      }
+      
+      // Calculate line height for Facebook native look
+      let lineHeight = fontSize * 1.4  // More generous line spacing like Facebook
       let totalTextHeight = lines.length * lineHeight
       
-      // Reduce font size if text is too tall
-      while (totalTextHeight > maxHeight && fontSize > 30) {  // Minimum size increased to 30
-        fontSize -= 3  // Reduce by 3 instead of 2 for faster adjustment
-        lineHeight = fontSize * 1.3
+      // Reduce font size if text is too tall (but keep it big)
+      while (totalTextHeight > maxHeight && fontSize > 80) {  // Minimum 80px (still very big)
+        fontSize -= 5
+        lineHeight = fontSize * 1.4
+        totalTextHeight = lines.length * lineHeight
+        
+        // Update font for measurements
+        ctx.font = `bold ${fontSize}px "Helvetica Neue", Helvetica, Arial, sans-serif`
+        
+        // Rewrap text with new font size
+        const newLines = []
+        let newCurrentLine = ''
+        
+        for (const word of words) {
+          const testLine = newCurrentLine ? `${newCurrentLine} ${word}` : word
+          const testWidth = ctx.measureText(testLine).width
+          
+          if (testWidth > maxWidth && newCurrentLine !== '') {
+            newLines.push(newCurrentLine)
+            newCurrentLine = word
+          } else {
+            newCurrentLine = testLine
+          }
+        }
+        
+        if (newCurrentLine) {
+          newLines.push(newCurrentLine)
+        }
+        
+        lines.splice(0, lines.length, ...newLines)
         totalTextHeight = lines.length * lineHeight
       }
       
-      // Check if any line is too wide - UPDATED with Helvetica Neue Bold
-      ctx.font = `bold ${fontSize}px "Helvetica Neue", Helvetica, Arial, sans-serif`
-      let maxLineWidth = 0
-      
-      for (const line of lines) {
-        const lineWidth = ctx.measureText(line).width
-        if (lineWidth > maxLineWidth) {
-          maxLineWidth = lineWidth
-        }
-      }
-      
-      // Reduce font size if text is too wide
-      while (maxLineWidth > maxWidth && fontSize > 30) {
-        fontSize -= 3
-        lineHeight = fontSize * 1.3
-        ctx.font = `bold ${fontSize}px "Helvetica Neue", Helvetica, Arial, sans-serif`  // Updated font
-        
-        maxLineWidth = 0
-        for (const line of lines) {
-          const lineWidth = ctx.measureText(line).width
-          if (lineWidth > maxLineWidth) {
-            maxLineWidth = lineWidth
-          }
-        }
-      }
-      
-      // Ensure minimum readable size
-      if (fontSize < 40) {
-        fontSize = 40
-        lineHeight = fontSize * 1.3
-        ctx.font = `bold ${fontSize}px "Helvetica Neue", Helvetica, Arial, sans-serif`  // Updated font
+      // Ensure minimum readable size (but keep it Facebook-native big)
+      if (fontSize < 100) {
+        fontSize = 100  // Still very large minimum
+        lineHeight = fontSize * 1.4
+        ctx.font = `bold ${fontSize}px "Helvetica Neue", Helvetica, Arial, sans-serif`
       }
       
       // Recalculate total height with final font size
@@ -140,14 +139,14 @@ export default function CanvasGenerator({ onImageGenerated }: CanvasGeneratorPro
       // Center the text vertically
       const startY = (canvas.height - totalTextHeight) / 2 + lineHeight / 2
 
-      // Draw each line
+      // Draw each line with Facebook native styling
       lines.forEach((line, index) => {
         const y = startY + (index * lineHeight)
         ctx.fillText(line, canvas.width / 2, y)
       })
 
-      // Get image data as WebP (better compression, good quality)
-      const dataUrl = canvas.toDataURL('image/webp', 0.92) // 92% quality for optimal balance
+      // Get image data as WebP
+      const dataUrl = canvas.toDataURL('image/webp', 0.92)
       if (onImageGenerated) {
         onImageGenerated({
           dataUrl,
@@ -168,7 +167,7 @@ export default function CanvasGenerator({ onImageGenerated }: CanvasGeneratorPro
     if (!canvas) return
     
     const link = document.createElement('a')
-    link.download = `caption_${Date.now()}.webp`
+    link.download = `facebook_status_${Date.now()}.webp`
     link.href = canvas.toDataURL('image/webp', 0.92)
     link.click()
   }
@@ -185,15 +184,18 @@ export default function CanvasGenerator({ onImageGenerated }: CanvasGeneratorPro
       <div className="space-y-6">
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Caption Text:
+            Facebook Status Text:
           </label>
           <textarea
             rows={6}
             value={formData.text}
             onChange={(e) => handleInputChange('text', e.target.value)}
-            placeholder="Enter your caption text here..."
+            placeholder="Enter your Facebook status text here..."
             className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
           />
+          <p className="text-sm text-gray-500 mt-2">
+            💡 Text will automatically wrap into multiple lines like native Facebook posts
+          </p>
         </div>
 
         <div>
@@ -234,12 +236,12 @@ export default function CanvasGenerator({ onImageGenerated }: CanvasGeneratorPro
 
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Font Size: {formData.fontSize}px
+            Font Size: {formData.fontSize}px (Facebook Native Style)
           </label>
           <input
             type="range"
-            min="40"
-            max="120"
+            min="100"    // Much higher minimum for Facebook look
+            max="250"    // Even higher maximum
             value={formData.fontSize}
             onChange={(e) => handleInputChange('fontSize', parseInt(e.target.value))}
             className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer"
@@ -252,7 +254,7 @@ export default function CanvasGenerator({ onImageGenerated }: CanvasGeneratorPro
             disabled={loading}
             className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-xl font-semibold disabled:opacity-50 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
           >
-            {loading ? 'Generating...' : 'Generate Image'}
+            {loading ? 'Generating...' : 'Generate Facebook Status'}
           </button>
           <button 
             onClick={downloadImage}
@@ -267,7 +269,7 @@ export default function CanvasGenerator({ onImageGenerated }: CanvasGeneratorPro
         {loading && (
           <div className="flex items-center justify-center mb-4 text-blue-600 font-semibold">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mr-3"></div>
-            Generating your image...
+            Creating Facebook native style...
           </div>
         )}
         <canvas 

@@ -19,7 +19,7 @@ export default function CanvasGenerator({ onImageGenerated }: CanvasGeneratorPro
     bgColor1: '#ff1744',
     bgColor2: '#3f51b5',
     textColor: '#ffffff',
-    fontSize: 80
+    fontSize: 56  // Changed from 80 to 56
   })
   const [loading, setLoading] = useState(false)
 
@@ -72,7 +72,7 @@ export default function CanvasGenerator({ onImageGenerated }: CanvasGeneratorPro
         
         for (const word of words) {
           const testLine = currentLine ? `${currentLine} ${word}` : word
-          ctx.font = `bold ${fontSize}px Arial, sans-serif`
+          ctx.font = `bold 56px "Helvetica Neue", Helvetica, Arial, sans-serif`  // Updated font
           
           if (ctx.measureText(testLine).width <= maxWidth || currentLine === '') {
             currentLine = testLine
@@ -101,8 +101,8 @@ export default function CanvasGenerator({ onImageGenerated }: CanvasGeneratorPro
         totalTextHeight = lines.length * lineHeight
       }
       
-      // Check if any line is too wide
-      ctx.font = `bold ${fontSize}px Arial, sans-serif`
+      // Check if any line is too wide - UPDATED with Helvetica Neue Bold
+      ctx.font = `bold ${fontSize}px "Helvetica Neue", Helvetica, Arial, sans-serif`
       let maxLineWidth = 0
       
       for (const line of lines) {
@@ -116,7 +116,7 @@ export default function CanvasGenerator({ onImageGenerated }: CanvasGeneratorPro
       while (maxLineWidth > maxWidth && fontSize > 30) {
         fontSize -= 3
         lineHeight = fontSize * 1.3
-        ctx.font = `bold ${fontSize}px Arial, sans-serif`
+        ctx.font = `bold ${fontSize}px "Helvetica Neue", Helvetica, Arial, sans-serif`  // Updated font
         
         maxLineWidth = 0
         for (const line of lines) {
@@ -131,7 +131,7 @@ export default function CanvasGenerator({ onImageGenerated }: CanvasGeneratorPro
       if (fontSize < 40) {
         fontSize = 40
         lineHeight = fontSize * 1.3
-        ctx.font = `bold ${fontSize}px Arial, sans-serif`
+        ctx.font = `bold ${fontSize}px "Helvetica Neue", Helvetica, Arial, sans-serif`  // Updated font
       }
       
       // Recalculate total height with final font size
